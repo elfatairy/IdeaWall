@@ -3,6 +3,7 @@ import type { Route } from './+types/whiteboard'
 import { GRID_CELL_SIZE, GRID_HEIGHT, GRID_WIDTH, MAX_ZOOM, MIN_ZOOM } from 'constants/grid'
 import Avatar, { genConfig } from 'react-nice-avatar'
 import { Button } from '~/components/ui/button'
+import { toast } from 'sonner'
 
 export function meta({ }: Route.MetaArgs) {
   return [
@@ -123,8 +124,10 @@ function HeaderActions() {
   return (
     <div className='flex flex-row gap-2 bg-white rounded-lg py-1 pl-2 pr-3 mt-1 shadow-lg items-center'>
       {renderOnlineUsers()}
-      {/* <img src="/assets/icons/share.svg" alt="Share" className='h-4 fill-gray-500' /> */}
-      <Button size='sm'>
+      <Button size='sm' onClick={() => {
+        navigator.clipboard.writeText(window.location.href)
+        toast.success('Board link copied, share it with your friends!')
+      }}>
         Share board
       </Button>
     </div>
