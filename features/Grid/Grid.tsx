@@ -39,7 +39,7 @@ export default function Grid({
           className='flex h-8 w-8 items-center justify-center rounded bg-blue-500 text-white transition-colors hover:bg-blue-600'
           title='Zoom Out'
         >
-          −
+          -
         </button>
         <button
           onClick={resetZoom}
@@ -86,9 +86,19 @@ export default function Grid({
                 opacity={0.5}
               />
             </pattern>
+            <pattern id='grid-3' width={scaledGridSize * 100} height={scaledGridSize * 100} patternUnits='userSpaceOnUse'>
+              <path
+                d={`M ${scaledGridSize * 100} 0 L 0 0 0 ${scaledGridSize * 100}`}
+                fill='none'
+                stroke='var(--color-gray-400)'
+                strokeWidth={1}
+                opacity={0.5}
+              />
+            </pattern>
           </defs>
           <rect width='100%' height='100%' fill='url(#grid-1)' />
           <rect width='100%' height='100%' fill='url(#grid-2)' />
+          <rect width='100%' height='100%' fill='url(#grid-3)' />
         </svg>
       </div>
     </div>
