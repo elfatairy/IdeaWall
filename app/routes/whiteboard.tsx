@@ -93,9 +93,12 @@ function HeaderActions() {
 
   const renderUser = (user: typeof activeUsers[number]) => {
     return (
-      <div className='relative w-6 z-10' key={user.id}>
-        <div className='bg-white rounded-full p-1 w-10 h-10'>
+      <div className='group w-6 z-10' key={user.id}>
+        <div className='relative bg-white rounded-full p-1 w-10 h-10'>
           <Avatar className='w-full h-full' {...user.config} />
+          <div className='absolute top-[100%] left-1/2 -translate-x-1/2 text-xs font-bold whitespace-nowrap bg-gray-200 rounded-full p-1 px-2 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300'>
+            {user.name}
+          </div>
         </div>
       </div>
     )
