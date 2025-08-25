@@ -16,7 +16,9 @@ export function meta({ }: Route.MetaArgs) {
 export default function Whiteboard() {
   return (
     <>
-      <header className='fixed z-10 flex w-full items-center justify-between px-4 py-2'></header>
+      <header className='fixed z-10 flex w-full items-center justify-between px-4 py-2'>
+        <img src="/logo2.svg" alt="IdeaWall" className='h-10' />
+      </header>
       <div className='fixed h-screen w-screen'>
         <Grid width={GRID_WIDTH} height={GRID_HEIGHT} gridSize={GRID_CELL_SIZE} minZoom={MIN_ZOOM} maxZoom={MAX_ZOOM} />
       </div>

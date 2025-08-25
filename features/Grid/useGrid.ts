@@ -23,8 +23,8 @@ export const useGrid = (width: number, height: number, minZoom: number, maxZoom:
 
   // Zoom handlers
   const handleZoom = useCallback(
-    (delta: number) => {
-      const newZoom = Math.max(minZoom, Math.min(maxZoom, zoom * delta))
+    (newZoom: number) => {
+      newZoom = Math.max(minZoom, Math.min(maxZoom, newZoom))
       setZoom(newZoom)
       const rect = containerRef.current?.getBoundingClientRect()
       const rectWidth = rect?.width ?? 0
@@ -107,8 +107,7 @@ export const useGrid = (width: number, height: number, minZoom: number, maxZoom:
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,
-    zoomIn,
-    zoomOut,
+    handleZoom,
     resetZoom
   }
 }

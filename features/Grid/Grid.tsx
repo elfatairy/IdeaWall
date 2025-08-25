@@ -1,3 +1,4 @@
+import { Slider } from '~/components/ui/slider'
 import { useGrid } from './useGrid'
 
 interface GridProps {
@@ -15,7 +16,7 @@ export default function Grid({
   minZoom = .1,
   maxZoom = 1
 }: GridProps) {
-  const { zoom, pan, containerRef, handleWheel, handleMouseDown, handleMouseMove, handleMouseUp, zoomIn, zoomOut, resetZoom } = useGrid(
+  const { zoom, pan, containerRef, handleWheel, handleMouseDown, handleMouseMove, handleMouseUp, handleZoom, resetZoom } = useGrid(
     width,
     height,
     minZoom,
@@ -26,29 +27,9 @@ export default function Grid({
   return (
     <div className='relative h-full w-full'>
       {/* Zoom Controls */}
-      <div className='absolute top-4 right-4 z-10 flex flex-col gap-2 rounded-lg bg-white p-2 shadow-lg'>
-        <button
-          onClick={zoomIn}
-          className='flex h-8 w-8 items-center justify-center rounded bg-blue-500 text-white transition-colors hover:bg-blue-600'
-          title='Zoom In'
-        >
-          +
-        </button>
-        <button
-          onClick={zoomOut}
-          className='flex h-8 w-8 items-center justify-center rounded bg-blue-500 text-white transition-colors hover:bg-blue-600'
-          title='Zoom Out'
-        >
-          -
-        </button>
-        <button
-          onClick={resetZoom}
-          className='flex h-8 w-8 items-center justify-center rounded bg-gray-500 text-xs text-white transition-colors hover:bg-gray-600'
-          title='Reset Zoom'
-        >
-          ⌂
-        </button>
-        <div className='text-center text-xs text-gray-600'>{Math.round(zoom * 100)}%</div>
+      <div className='absolute bottom-4 right-4 z-10 flex flex-row gap-2 items-center rounded-lg bg-white p-2 shadow-lg'>
+        <Slider min={minZoom} max={maxZoom} value={[zoom]} step={0.1} onValueChange={(values) => handleZoom(values[0])} className='w-40' />
+        <div className='text-center text-xs font-bold text-gray-600'>x{zoom.toFixed(2)}</div>
       </div>
       {/* Grid Container */}
       <div
