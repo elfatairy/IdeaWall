@@ -1,9 +1,10 @@
-import Grid from 'features/Grid/Grid'
+import Grid from '~/features/Grid/Grid'
 import type { Route } from './+types/whiteboard'
-import { GRID_CELL_SIZE, GRID_HEIGHT, GRID_WIDTH, MAX_ZOOM, MIN_ZOOM } from 'constants/grid'
+import { GRID_CELL_SIZE, GRID_HEIGHT, GRID_WIDTH, MAX_ZOOM, MIN_ZOOM } from '~/constants/grid'
 import Avatar, { genConfig } from 'react-nice-avatar'
 import { Button } from '~/components/ui/button'
 import { toast } from 'sonner'
+import ShareIcon from '~/assets/icons/share.svg'
 
 export function meta({ }: Route.MetaArgs) {
   return [
@@ -90,22 +91,21 @@ export default function Whiteboard() {
 
 function HeaderActions() {
 
+  const renderUser = (user: typeof activeUsers[number]) => {
+    return (
+      <div className='relative w-6 z-10' key={user.id}>
+        <div className='bg-white rounded-full p-1 w-10 h-10'>
+          <Avatar className='w-full h-full' {...user.config} />
+        </div>
+      </div>
+    )
+  }
+
   const renderOnlineUsers = () => {
     return (
       <div className='flex flex-row'>
         {
-          activeUsers.slice(0, 4).map((user, index) => {
-            return (
-              <div className='relative w-6 z-10' key={user.id}>
-                <div className='bg-white rounded-full p-1 w-10 h-10'>
-                  <Avatar key={index} className='w-full h-full' {...user.config} />
-                  {/* <div className='bg-white p-1/2 w-3 h-3 rounded-full absolute top-2 left-0 flex items-center justify-center'>
-                        <span className='bg-green-600 rounded-full w-2 h-2' />
-                      </div> */}
-                </div>
-              </div>
-            )
-          })
+          activeUsers.slice(0, 4).map((user) => renderUser(user))
         }
         {
           activeUsers.length > 4 && (
@@ -121,15 +121,26 @@ function HeaderActions() {
       </div>
     )
   }
+  const config = genConfig();
+
   return (
-    <div className='flex flex-row gap-2 bg-white rounded-lg py-1 pl-2 pr-3 mt-1 shadow-lg items-center'>
+    <div className='flex flex-row gap-1 bg-white rounded-lg py-1 pl-2 pr-3 mt-1 shadow-lg items-center'>
       {renderOnlineUsers()}
-      <Button size='sm' onClick={() => {
+
+      <Button size='icon' variant='ghost' onClick={() => {
         navigator.clipboard.writeText(window.location.href)
         toast.success('Board link copied, share it with your friends!')
-      }}>
-        Share board
+      }} className='cursor-pointer'>
+        <img src={ShareIcon} className='size-4' />
       </Button>
+
+      <div className='flex flex-row gap-2'>
+        <div className="p-[2.5px] rounded-full bg-gradient-to-r from-emerald-600 to-green-400 cursor-pointer">
+          <div className='bg-white rounded-full p-[2.5px] w-10 h-10'>
+            <Avatar className='w-full h-full' {...config} />
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
