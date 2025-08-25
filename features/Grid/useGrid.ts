@@ -31,7 +31,6 @@ export const useGrid = (width: number, height: number, minZoom: number, maxZoom:
       const rectHeight = rect?.height ?? 0
 
       const zoomRatio = newZoom / zoom
-      console.log(pan.x, width * newZoom - rectWidth, ((1 - zoomRatio) * rectWidth) / 2 + (pan.x * newZoom) / zoom)
       setPan((prevPan) => {
         const newX = ((1 - zoomRatio) * rectWidth) / 2 + prevPan.x * zoomRatio
         const newY = ((1 - zoomRatio) * rectHeight) / 2 + prevPan.y * zoomRatio
@@ -47,7 +46,6 @@ export const useGrid = (width: number, height: number, minZoom: number, maxZoom:
   // Mouse wheel zoom
   const handleWheel = useCallback(
     (e: React.WheelEvent) => {
-      e.preventDefault()
       const rect = containerRef.current?.getBoundingClientRect()
       if (!rect) return
 
@@ -55,7 +53,7 @@ export const useGrid = (width: number, height: number, minZoom: number, maxZoom:
       // const centerY = e.clientY - rect.top
       const delta = e.deltaY > 0 ? 0.9 : 1.1
 
-      handleZoom(delta)
+      handleZoom(delta * zoom)
     },
     [handleZoom]
   )
