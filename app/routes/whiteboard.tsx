@@ -134,7 +134,7 @@ function HeaderActions() {
         }
         {
           activeUsers.length > 4 && (
-            <div className='z-10'>
+            <div className='z-100'>
               <div className='bg-white rounded-full p-1 w-10 h-10 flex items-center justify-center'>
                 <div className='w-full h-full bg-gray-200 rounded-full flex items-center justify-center text-xs font-bold'>
                   +{activeUsers.length - 4}
