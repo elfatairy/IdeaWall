@@ -125,6 +125,31 @@ export const useGrid = (width: number, height: number, minZoom: number, maxZoom:
     [pan]
   )
 
+  const handleTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      setIsDragging(true)
+      setDragStart({ x: e.touches[0].clientX - pan.x, y: e.touches[0].clientY - pan.y })
+    },
+    [pan]
+  )
+
+  const handleTouchMove = useCallback(
+    (e: React.TouchEvent) => {
+      if (isDragging) {
+        dispatchPan({
+          type: 'set',
+          x: e.touches[0].clientX - dragStart.x,
+          y: e.touches[0].clientY - dragStart.y
+        })
+      }
+    },
+    [isDragging, dragStart.x, dragStart.y]
+  )
+
+  const handleTouchEnd = useCallback(() => {
+    setIsDragging(false)
+  }, [])
+
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
       if (isDragging) {
@@ -169,6 +194,9 @@ export const useGrid = (width: number, height: number, minZoom: number, maxZoom:
     containerRef,
     handleWheel,
     handleMouseDown,
+    handleTouchStart,
+    handleTouchMove,
+    handleTouchEnd,
     handleMouseMove,
     handleMouseUp,
     handleZoom,

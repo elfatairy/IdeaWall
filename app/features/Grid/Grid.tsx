@@ -24,7 +24,7 @@ export default function Grid({
   maxZoom = 1,
   ref = undefined
 }: GridProps) {
-  const { zoom, pan, containerRef, handleWheel, handleMouseDown, handleMouseMove, handleMouseUp, handleZoom, handleKeyDown } = useGrid(
+  const { zoom, pan, containerRef, handleWheel, handleMouseDown, handleMouseMove, handleMouseUp, handleZoom, handleKeyDown, handleTouchStart, handleTouchMove, handleTouchEnd } = useGrid(
     width,
     height,
     minZoom,
@@ -56,6 +56,10 @@ export default function Grid({
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
         onKeyDown={handleKeyDown}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchEnd}
       >
         <svg
           width={width * zoom}

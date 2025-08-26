@@ -95,7 +95,7 @@ export default function Whiteboard() {
 
         <HeaderActions />
       </header>
-      <div className='fixed h-screen w-screen'>
+      <div className='fixed h-dvh w-screen'>
         <Grid
           ref={gridRef}
           width={GRID_WIDTH}
@@ -128,7 +128,7 @@ function HeaderActions() {
 
   const renderOnlineUsers = () => {
     return (
-      <div className='flex flex-row'>
+      <div className='flex-row hidden sm:flex'>
         {
           activeUsers.slice(0, 4).map((user) => renderUser(user))
         }
