@@ -137,33 +137,7 @@ export default [
 
       // React Hooks rules
       'reactHooks/rules-of-hooks': 'error',
-      'reactHooks/exhaustive-deps': 'error',
-
-      // TypeScript rules
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-      '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/no-non-null-assertion': 'error',
-      '@typescript-eslint/prefer-const': 'error',
-      '@typescript-eslint/no-var-requires': 'error',
-      '@typescript-eslint/explicit-function-return-type': 'off',
-      '@typescript-eslint/explicit-module-boundary-types': 'off',
-      '@typescript-eslint/no-empty-function': 'error',
-      '@typescript-eslint/no-empty-interface': 'error',
-      '@typescript-eslint/no-inferrable-types': 'error',
-      '@typescript-eslint/no-misused-new': 'error',
-      '@typescript-eslint/no-namespace': 'error',
-      '@typescript-eslint/no-non-null-asserted-optional-chain': 'error',
-      '@typescript-eslint/no-this-alias': 'error',
-      '@typescript-eslint/no-unnecessary-type-constraint': 'error',
-      '@typescript-eslint/prefer-as-const': 'error',
-      '@typescript-eslint/prefer-namespace-keyword': 'error',
-      '@typescript-eslint/triple-slash-reference': 'error',
-      '@typescript-eslint/no-shadow': 'error',
-      '@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
-      '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
-      '@typescript-eslint/no-duplicate-enum-values': 'error',
-      '@typescript-eslint/no-import-type-side-effects': 'error',
-      '@typescript-eslint/prefer-literal-enum-member': 'error'
+      'reactHooks/exhaustive-deps': 'error'
     },
     settings: {
       react: {

@@ -1,5 +1,11 @@
 import { Slider } from '~/components/ui/slider'
 import { useGrid } from './useGrid'
+import type React from 'react'
+import { useImperativeHandle } from 'react'
+
+export interface GridRef {
+  focusGrid: () => void
+}
 
 interface GridProps {
   width?: number
@@ -7,6 +13,7 @@ interface GridProps {
   gridSize?: number
   minZoom?: number
   maxZoom?: number
+  ref?: React.RefObject<GridRef | null>
 }
 
 export default function Grid({
@@ -14,9 +21,10 @@ export default function Grid({
   height = window.innerHeight * 10,
   gridSize = 20,
   minZoom = .1,
-  maxZoom = 1
+  maxZoom = 1,
+  ref = undefined
 }: GridProps) {
-  const { zoom, pan, containerRef, handleWheel, handleMouseDown, handleMouseMove, handleMouseUp, handleZoom, resetZoom } = useGrid(
+  const { zoom, pan, containerRef, handleWheel, handleMouseDown, handleMouseMove, handleMouseUp, handleZoom, handleKeyDown } = useGrid(
     width,
     height,
     minZoom,
@@ -24,22 +32,30 @@ export default function Grid({
   )
   const scaledGridSize = gridSize * zoom
 
+  useImperativeHandle(ref, () => ({
+    focusGrid: () => {
+      containerRef.current?.focus()
+    }
+  }))
+
   return (
     <div className='relative h-full w-full'>
       {/* Zoom Controls */}
       <div className='absolute bottom-4 right-4 z-10 flex flex-row gap-2 items-center rounded-lg bg-white p-2 shadow-lg'>
-        <Slider min={minZoom} max={maxZoom} value={[zoom]} step={0.1} onValueChange={(values) => handleZoom(values[0])} className='w-40' />
+        <Slider min={minZoom} max={maxZoom} value={[zoom]} step={0.1} onValueChange={(values) => handleZoom(values[0])} className='w-40' aria-label='Zoom level slider' />
         <div className='text-center text-xs font-bold text-gray-600'>x{zoom.toFixed(2)}</div>
       </div>
       {/* Grid Container */}
       <div
         ref={containerRef}
-        className='h-full w-full cursor-grab active:cursor-grabbing'
+        className='h-full w-full cursor-grab active:cursor-grabbing focus:opacity-50'
+        tabIndex={0}
         onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
+        onKeyDown={handleKeyDown}
       >
         <svg
           width={width * zoom}

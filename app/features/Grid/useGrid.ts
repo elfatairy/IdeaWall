@@ -1,23 +1,86 @@
-import { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import type React from 'react'
+import { useCallback, useLayoutEffect, useReducer, useRef, useState } from 'react'
 
 export const useGrid = (width: number, height: number, minZoom: number, maxZoom: number) => {
   const [zoom, setZoom] = useState(1)
-  const [pan, setPan] = useState({ x: -width / 2, y: -height / 2 })
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [pan, dispatchPan] = useReducer(
+    (
+      prev: { x: number; y: number },
+      action: {
+        type: 'set' | 'move' | 'zoom' | 'reset'
+        x?: number
+        y?: number
+        prevZoom?: number
+        newZoom?: number
+      }
+    ) => {
+      const rect = containerRef.current?.getBoundingClientRect()
+      if (!rect) {
+        return prev
+      }
+      const rectWidth = rect.width
+      const rectHeight = rect.height
+
+      switch (action.type) {
+        case 'set':
+          if (!action.x || !action.y) {
+            return prev
+          }
+
+          return {
+            x: Math.max(Math.min(0, action.x), rectWidth - width * zoom),
+            y: Math.max(Math.min(0, action.y), rectHeight - height * zoom)
+          }
+        case 'move':
+          return {
+            x: Math.max(Math.min(0, prev.x + (action.x ?? 0)), rectWidth - width * zoom),
+            y: Math.max(Math.min(0, prev.y + (action.y ?? 0)), rectHeight - height * zoom)
+          }
+        case 'zoom':
+          if (!action.newZoom || !action.prevZoom) {
+            return prev
+          }
+          const newZoom = Math.max(minZoom, Math.min(maxZoom, action.newZoom))
+          const zoomRatio = newZoom / action.prevZoom
+          const newX = ((1 - zoomRatio) * rectWidth) / 2 + prev.x * zoomRatio
+          const newY = ((1 - zoomRatio) * rectHeight) / 2 + prev.y * zoomRatio
+          return {
+            x: Math.max(Math.min(0, newX), rectWidth - width * newZoom),
+            y: Math.max(Math.min(0, newY), rectHeight - height * newZoom)
+          }
+        case 'reset':
+          return {
+            x: rectWidth / 2 - width / 2,
+            y: rectHeight / 2 - height / 2
+          }
+      }
+    },
+    {
+      x: -width / 2,
+      y: -height / 2
+    }
+  )
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
-  const containerRef = useRef<HTMLDivElement>(null)
 
   const resetPan = () => {
     const rect = containerRef.current?.getBoundingClientRect()
     if (rect) {
-      setPan({ x: rect.width / 2 - width / 2, y: rect.height / 2 - height / 2 })
+      dispatchPan({
+        type: 'reset'
+      })
     }
   }
 
   useLayoutEffect(() => {
     const rect = containerRef.current?.getBoundingClientRect()
     if (rect) {
-      setPan({ x: rect.width / 2 - width / 2, y: rect.height / 2 - height / 2 })
+      dispatchPan({
+        type: 'set',
+        x: rect.width / 2 - width / 2,
+        y: rect.height / 2 - height / 2
+      })
     }
   }, [width, height])
 
@@ -26,18 +89,10 @@ export const useGrid = (width: number, height: number, minZoom: number, maxZoom:
     (newZoom: number) => {
       newZoom = Math.max(minZoom, Math.min(maxZoom, newZoom))
       setZoom(newZoom)
-      const rect = containerRef.current?.getBoundingClientRect()
-      const rectWidth = rect?.width ?? 0
-      const rectHeight = rect?.height ?? 0
-
-      const zoomRatio = newZoom / zoom
-      setPan((prevPan) => {
-        const newX = ((1 - zoomRatio) * rectWidth) / 2 + prevPan.x * zoomRatio
-        const newY = ((1 - zoomRatio) * rectHeight) / 2 + prevPan.y * zoomRatio
-        return {
-          x: Math.max(Math.min(0, newX), rectWidth - width * newZoom),
-          y: Math.max(Math.min(0, newY), rectHeight - height * newZoom)
-        }
+      dispatchPan({
+        type: 'zoom',
+        prevZoom: zoom,
+        newZoom
       })
     },
     [minZoom, maxZoom, zoom]
@@ -47,15 +102,15 @@ export const useGrid = (width: number, height: number, minZoom: number, maxZoom:
   const handleWheel = useCallback(
     (e: React.WheelEvent) => {
       const rect = containerRef.current?.getBoundingClientRect()
-      if (!rect) return
+      if (!rect) {
+        return
+      }
 
-      // const centerX = e.clientX - rect.left
-      // const centerY = e.clientY - rect.top
       const delta = e.deltaY > 0 ? 0.9 : 1.1
 
       handleZoom(delta * zoom)
     },
-    [handleZoom]
+    [handleZoom, zoom]
   )
 
   // Pan handlers
@@ -73,12 +128,10 @@ export const useGrid = (width: number, height: number, minZoom: number, maxZoom:
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
       if (isDragging) {
-        const rect = containerRef.current?.getBoundingClientRect()
-        const rectWidth = rect?.width ?? 0
-        const rectHeight = rect?.height ?? 0
-        setPan({
-          x: Math.max(Math.min(0, e.clientX - dragStart.x), rectWidth - width * zoom),
-          y: Math.max(Math.min(0, e.clientY - dragStart.y), rectHeight - height * zoom)
+        dispatchPan({
+          type: 'set',
+          x: e.clientX - dragStart.x,
+          y: e.clientY - dragStart.y
         })
       }
     },
@@ -89,9 +142,22 @@ export const useGrid = (width: number, height: number, minZoom: number, maxZoom:
     setIsDragging(false)
   }, [])
 
-  // Zoom controls
-  const zoomIn = () => handleZoom(1.2)
-  const zoomOut = () => handleZoom(0.8)
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      dispatchPan({ type: 'move', y: 10 })
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      dispatchPan({ type: 'move', y: -10 })
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault()
+      dispatchPan({ type: 'move', x: 10 })
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault()
+      dispatchPan({ type: 'move', x: -10 })
+    }
+  }, [])
+
   const resetZoom = () => {
     setZoom(1)
     resetPan()
@@ -106,6 +172,7 @@ export const useGrid = (width: number, height: number, minZoom: number, maxZoom:
     handleMouseMove,
     handleMouseUp,
     handleZoom,
-    resetZoom
+    resetZoom,
+    handleKeyDown
   }
 }
