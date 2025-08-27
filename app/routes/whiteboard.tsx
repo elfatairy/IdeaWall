@@ -6,6 +6,10 @@ import { Button } from '~/components/ui/button'
 import { toast } from 'sonner'
 import ShareIcon from '~/assets/icons/share.svg'
 import { useId, useRef } from 'react'
+import { faker } from '@faker-js/faker';
+import { useProfile } from '~/contexts/UserContext'
+import { cn } from '~/lib/utils'
+import { ProfileDialog } from '~/features/CreateProfile/CreateProfile'
 
 export function meta({ }: Route.MetaArgs) {
   return [
@@ -21,61 +25,62 @@ export function meta({ }: Route.MetaArgs) {
 const activeUsers = [
   {
     id: 1,
-    name: 'John Doe',
+    name: faker.person.fullName(),
     color: 'red',
     config: genConfig()
   },
   {
     id: 2,
-    name: 'Jane Doe',
+    name: faker.person.fullName(),
     color: 'blue',
     config: genConfig()
   },
   {
     id: 3,
-    name: 'John Doe',
+    name: faker.person.fullName(),
     color: 'red',
     config: genConfig()
   },
   {
     id: 4,
-    name: 'Jane Doe',
+    name: faker.person.fullName(),
     color: 'blue',
     config: genConfig()
   },
   {
     id: 5,
-    name: 'John Doe',
+    name: faker.person.fullName(),
     color: 'red',
     config: genConfig()
   },
   {
     id: 6,
-    name: 'Jane Doe',
+    name: faker.person.fullName(),
     color: 'blue',
     config: genConfig()
   },
   {
     id: 7,
-    name: 'John Doe',
+    name: faker.person.fullName(),
     color: 'red',
     config: genConfig()
   },
   {
     id: 8,
-    name: 'Jane Doe',
+    name: faker.person.fullName(),
     color: 'blue',
     config: genConfig()
   },
   {
     id: 9,
-    name: 'John Doe',
+    name: faker.person.fullName(),
     color: 'red',
     config: genConfig()
   },
 ]
 
 export default function Whiteboard() {
+  const profile = useProfile()
   const gridRef = useRef<GridRef>(null)
 
   const handleSkipToWhiteboard = () => {
@@ -98,6 +103,7 @@ export default function Whiteboard() {
       <div className='fixed h-dvh w-screen'>
         <Grid
           ref={gridRef}
+          disabled={!profile}
           width={GRID_WIDTH}
           height={GRID_HEIGHT}
           gridSize={GRID_CELL_SIZE}
@@ -105,11 +111,16 @@ export default function Whiteboard() {
           maxZoom={MAX_ZOOM}
         />
       </div>
+
+      {
+        <ProfileDialog open={!profile} />
+      }
     </>
   )
 }
 
 function HeaderActions() {
+  const profile = useProfile()
 
   const renderUser = (user: typeof activeUsers[number]) => {
     const labelId = useId();
@@ -146,7 +157,6 @@ function HeaderActions() {
       </div>
     )
   }
-  const config = genConfig();
 
   return (
     <div className='flex flex-row gap-1 bg-white rounded-lg py-1 pl-2 pr-3 mt-1 shadow-lg items-center'>
@@ -160,9 +170,17 @@ function HeaderActions() {
       </Button>
 
       <button className='flex flex-row gap-2 ml-1' aria-label='Your avatar'>
-        <div className="p-[2.5px] rounded-full bg-gradient-to-r from-emerald-600 to-green-400 cursor-pointer">
+        <div className={cn("p-[2.5px] rounded-full bg-gradient-to-r from-gray-600 to-gray-400 cursor-pointer", profile && "bg-gradient-to-r from-emerald-600 to-green-400")}>
           <div className='bg-white rounded-full p-[2.5px] w-10 h-10'>
-            <Avatar className='w-full h-full' {...config} />
+            {
+              profile ? (
+                <Avatar className='w-full h-full' {...profile.avatarConfig} />
+              ) : (
+                <div className='w-full h-full bg-gray-200 rounded-full flex items-center justify-center text-xs font-bold'>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user-icon lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+                </div>
+              )
+            }
           </div>
         </div>
       </button>

@@ -2,6 +2,7 @@ import { Slider } from '~/components/ui/slider'
 import { useGrid } from './useGrid'
 import type React from 'react'
 import { useImperativeHandle } from 'react'
+import { cn } from '~/lib/utils'
 
 export interface GridRef {
   focusGrid: () => void
@@ -14,6 +15,7 @@ interface GridProps {
   minZoom?: number
   maxZoom?: number
   ref?: React.RefObject<GridRef | null>
+  disabled?: boolean
 }
 
 export default function Grid({
@@ -22,7 +24,8 @@ export default function Grid({
   gridSize = 20,
   minZoom = .1,
   maxZoom = 1,
-  ref = undefined
+  ref = undefined,
+  disabled = false
 }: GridProps) {
   const { zoom, pan, containerRef, handleWheel, handleMouseDown, handleMouseMove, handleMouseUp, handleZoom, handleKeyDown, handleTouchStart, handleTouchMove, handleTouchEnd } = useGrid(
     width,
@@ -48,18 +51,18 @@ export default function Grid({
       {/* Grid Container */}
       <div
         ref={containerRef}
-        className='h-full w-full cursor-grab active:cursor-grabbing focus:opacity-50'
+        className={cn('h-full w-full', !disabled && 'cursor-grab active:cursor-grabbing')}
         tabIndex={0}
-        onWheel={handleWheel}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onKeyDown={handleKeyDown}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onTouchCancel={handleTouchEnd}
+        onWheel={disabled ? undefined : handleWheel}
+        onMouseDown={disabled ? undefined : handleMouseDown}
+        onMouseMove={disabled ? undefined : handleMouseMove}
+        onMouseUp={disabled ? undefined : handleMouseUp}
+        onMouseLeave={disabled ? undefined : handleMouseUp}
+        onKeyDown={disabled ? undefined : handleKeyDown}
+        onTouchStart={disabled ? undefined : handleTouchStart}
+        onTouchMove={disabled ? undefined : handleTouchMove}
+        onTouchEnd={disabled ? undefined : handleTouchEnd}
+        onTouchCancel={disabled ? undefined : handleTouchEnd}
       >
         <svg
           width={width * zoom}
