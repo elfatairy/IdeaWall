@@ -16,7 +16,7 @@ export type Database = {
     Tables: {
       users: {
         Row: {
-          color: Database["public"]["Enums"]["colors"]
+          avatarConfig: Json
           created_at: string
           id: string
           last_activity_at: string
@@ -24,15 +24,15 @@ export type Database = {
           position: Json | null
         }
         Insert: {
-          color: Database["public"]["Enums"]["colors"]
+          avatarConfig: Json
           created_at?: string
-          id: string
+          id?: string
           last_activity_at?: string
           name: string
           position?: Json | null
         }
         Update: {
-          color?: Database["public"]["Enums"]["colors"]
+          avatarConfig?: Json
           created_at?: string
           id?: string
           last_activity_at?: string

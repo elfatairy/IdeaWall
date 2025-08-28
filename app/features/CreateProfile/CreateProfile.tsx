@@ -1,20 +1,36 @@
-import { Dice1, Dices, Mars, Pencil, Venus } from 'lucide-react'
+import { Dices, Loader2, Mars, Venus } from 'lucide-react'
 import { useId, useState } from 'react'
 import { Button } from '~/components/ui/button'
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '~/components/ui/dialog'
+import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '~/components/ui/dialog'
 import { Input } from '~/components/ui/input'
-import { Label } from '~/components/ui/label'
 import Avatar, { genConfig, type AvatarFullConfig } from 'react-nice-avatar'
 import { faker } from '@faker-js/faker'
+import { useCreateProfile } from './useCreateProfile'
+import { toast } from 'sonner'
 
 export function ProfileDialog({ open }: { open: boolean }) {
+  const { createProfile, isLoading: isCreatingProfile } = useCreateProfile()
   const [sex, setSex] = useState<'man' | 'woman'>()
+
+  const handleBack = () => {
+    setSex(undefined)
+  }
+
+  const handleSubmit = async (name: string, avatar: AvatarFullConfig) => {
+    const result = await createProfile(name, avatar)
+    if (result.success) {
+      toast.success('Profile created successfully')
+    } else {
+      console.error(result.error)
+      toast.error('Failed to create profile')
+    }
+  }
 
   const renderDialogContent = () => {
     if (!sex) {
       return <GendersDialog onSelect={setSex} />
     }
-    return <NameAvatarDialog sex={sex} />
+    return <NameAvatarDialog sex={sex} onSubmit={handleSubmit} isCreatingProfile={isCreatingProfile} onBack={handleBack} />
   }
 
   return (
@@ -50,7 +66,7 @@ function GendersDialog({ onSelect }: { onSelect: (sex: 'man' | 'woman') => void 
   )
 }
 
-function NameAvatarDialog({ sex }: { sex: 'man' | 'woman' }) {
+function NameAvatarDialog({ sex, onSubmit, isCreatingProfile, onBack }: { sex: 'man' | 'woman', onSubmit: (name: string, avatar: AvatarFullConfig) => void, isCreatingProfile: boolean, onBack: () => void }) {
   const id = useId()
   const [avatar, setAvatar] = useState<AvatarFullConfig>(() => genConfig({}))
   const [name, setName] = useState<string>(faker.person.fullName())
@@ -86,9 +102,9 @@ function NameAvatarDialog({ sex }: { sex: 'man' | 'woman' }) {
       </div>
       <DialogFooter className='flex sm:justify-between'>
         <DialogClose asChild>
-          <Button variant='outline'>Back</Button>
+          <Button variant='outline' onClick={onBack} className='cursor-pointer'>Back</Button>
         </DialogClose>
-        <Button type='submit'>Submit</Button>
+        <Button type='submit' className='w-20 cursor-pointer' onClick={() => onSubmit(name, avatar)} disabled={isCreatingProfile}>{isCreatingProfile ? <Loader2 className='animate-spin' /> : 'Submit'}</Button>
       </DialogFooter>
     </>
   )

@@ -11,7 +11,7 @@ import { Toaster } from "sonner";
 
 import type { Route } from "./+types/root";
 import "./app.css";
-import { ProfileProvider } from './contexts/UserContext';
+import { ProfileProvider } from './contexts/ProfileContext';
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },

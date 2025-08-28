@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 import ShareIcon from '~/assets/icons/share.svg'
 import { useId, useRef } from 'react'
 import { faker } from '@faker-js/faker';
-import { useProfile } from '~/contexts/UserContext'
+import { useProfile } from '~/contexts/ProfileContext'
 import { cn } from '~/lib/utils'
 import { ProfileDialog } from '~/features/CreateProfile/CreateProfile'
 
@@ -80,7 +80,7 @@ const activeUsers = [
 ]
 
 export default function Whiteboard() {
-  const profile = useProfile()
+  const { profile } = useProfile()
   const gridRef = useRef<GridRef>(null)
 
   const handleSkipToWhiteboard = () => {
@@ -120,7 +120,7 @@ export default function Whiteboard() {
 }
 
 function HeaderActions() {
-  const profile = useProfile()
+  const { profile } = useProfile()
 
   const renderUser = (user: typeof activeUsers[number]) => {
     const labelId = useId();
