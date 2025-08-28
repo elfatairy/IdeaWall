@@ -2,7 +2,7 @@ import type React from 'react'
 import { createContext, useContext, useEffect, useState } from 'react'
 import type { AvatarConfig } from 'react-nice-avatar'
 
-type User = {
+export type User = {
   id: string;
   name: string;
   avatarConfig: AvatarConfig;

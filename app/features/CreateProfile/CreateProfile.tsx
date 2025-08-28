@@ -7,8 +7,9 @@ import Avatar, { genConfig, type AvatarFullConfig } from 'react-nice-avatar'
 import { faker } from '@faker-js/faker'
 import { useCreateProfile } from './useCreateProfile'
 import { toast } from 'sonner'
+import { randomizeNameHelper } from '~/lib/utils'
 
-export function ProfileDialog({ open }: { open: boolean }) {
+export function CreateProfileDialog({ open }: { open: boolean }) {
   const { createProfile, isLoading: isCreatingProfile } = useCreateProfile()
   const [sex, setSex] = useState<'man' | 'woman'>()
 
@@ -30,7 +31,7 @@ export function ProfileDialog({ open }: { open: boolean }) {
     if (!sex) {
       return <GendersDialog onSelect={setSex} />
     }
-    return <NameAvatarDialog sex={sex} onSubmit={handleSubmit} isCreatingProfile={isCreatingProfile} onBack={handleBack} />
+    return <NameAvatarDialog sex={sex} onSubmit={handleSubmit} isSubmitting={isCreatingProfile} onBack={handleBack} />
   }
 
   return (
@@ -66,7 +67,7 @@ function GendersDialog({ onSelect }: { onSelect: (sex: 'man' | 'woman') => void 
   )
 }
 
-function NameAvatarDialog({ sex, onSubmit, isCreatingProfile, onBack }: { sex: 'man' | 'woman', onSubmit: (name: string, avatar: AvatarFullConfig) => void, isCreatingProfile: boolean, onBack: () => void }) {
+function NameAvatarDialog({ sex, onSubmit, isSubmitting, onBack }: { sex: 'man' | 'woman', onSubmit: (name: string, avatar: AvatarFullConfig) => void, isSubmitting: boolean, onBack: () => void }) {
   const id = useId()
   const [avatar, setAvatar] = useState<AvatarFullConfig>(() => genConfig({}))
   const [name, setName] = useState<string>(faker.person.fullName())
@@ -76,7 +77,7 @@ function NameAvatarDialog({ sex, onSubmit, isCreatingProfile, onBack }: { sex: '
   }
 
   const randomizeName = () => {
-    setName(faker.person.fullName())
+    setName(randomizeNameHelper(sex))
   }
 
   return (
@@ -104,7 +105,7 @@ function NameAvatarDialog({ sex, onSubmit, isCreatingProfile, onBack }: { sex: '
         <DialogClose asChild>
           <Button variant='outline' onClick={onBack} className='cursor-pointer'>Back</Button>
         </DialogClose>
-        <Button type='submit' className='w-20 cursor-pointer' onClick={() => onSubmit(name, avatar)} disabled={isCreatingProfile}>{isCreatingProfile ? <Loader2 className='animate-spin' /> : 'Submit'}</Button>
+        <Button type='submit' className='w-20 cursor-pointer' onClick={() => onSubmit(name, avatar)} disabled={isSubmitting}>{isSubmitting ? <Loader2 className='animate-spin' /> : 'Create'}</Button>
       </DialogFooter>
     </>
   )

@@ -5,11 +5,14 @@ import Avatar, { genConfig } from 'react-nice-avatar'
 import { Button } from '~/components/ui/button'
 import { toast } from 'sonner'
 import ShareIcon from '~/assets/icons/share.svg'
-import { useId, useRef } from 'react'
+import { useId, useRef, useState } from 'react'
 import { faker } from '@faker-js/faker';
 import { useProfile } from '~/contexts/ProfileContext'
 import { cn } from '~/lib/utils'
-import { ProfileDialog } from '~/features/CreateProfile/CreateProfile'
+import { CreateProfileDialog } from '~/features/CreateProfile/CreateProfile'
+import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover'
+import { LogOutIcon, PencilIcon } from 'lucide-react'
+import { EditProfileDialog } from '~/features/EditProfile/EditProfile'
 
 export function meta({ }: Route.MetaArgs) {
   return [
@@ -113,31 +116,29 @@ export default function Whiteboard() {
       </div>
 
       {
-        <ProfileDialog open={!profile} />
+        <CreateProfileDialog open={!profile} />
       }
     </>
   )
 }
 
 function HeaderActions() {
-  const { profile } = useProfile()
+  const renderOnlineUsers = () => {
+    const renderUser = (user: typeof activeUsers[number]) => {
+      const labelId = useId();
 
-  const renderUser = (user: typeof activeUsers[number]) => {
-    const labelId = useId();
-
-    return (
-      <div className='group w-6 z-100' key={user.id}>
-        <div className='relative bg-white rounded-full p-1 w-10 h-10 focus:bg-gray-300 focus:outline-none' aria-describedby={labelId} tabIndex={0}>
-          <Avatar className='w-full h-full' {...user.config} />
-          <div id={labelId} className='absolute top-[100%] left-1/2 -translate-x-1/2 text-xs font-bold whitespace-nowrap bg-gray-200 rounded-full p-1 px-2 flex items-center justify-center opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300'>
-            {user.name}
+      return (
+        <div className='group w-6 z-100' key={user.id}>
+          <div className='relative bg-white rounded-full p-1 w-10 h-10 focus:bg-gray-300 focus:outline-none' aria-describedby={labelId} tabIndex={0}>
+            <Avatar className='w-full h-full' {...user.config} />
+            <div id={labelId} className='absolute top-[100%] left-1/2 -translate-x-1/2 text-xs font-bold whitespace-nowrap bg-gray-200 rounded-full p-1 px-2 flex items-center justify-center opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300'>
+              {user.name}
+            </div>
           </div>
         </div>
-      </div>
-    )
-  }
+      )
+    }
 
-  const renderOnlineUsers = () => {
     return (
       <div className='flex-row hidden sm:flex'>
         {
@@ -169,21 +170,54 @@ function HeaderActions() {
         <img src={ShareIcon} className='size-4' aria-hidden='true' />
       </Button>
 
-      <button className='flex flex-row gap-2 ml-1' aria-label='Your avatar'>
-        <div className={cn("p-[2.5px] rounded-full bg-gradient-to-r from-gray-600 to-gray-400 cursor-pointer", profile && "bg-gradient-to-r from-emerald-600 to-green-400")}>
-          <div className='bg-white rounded-full p-[2.5px] w-10 h-10'>
-            {
-              profile ? (
-                <Avatar className='w-full h-full' {...profile.avatarConfig} />
-              ) : (
-                <div className='w-full h-full bg-gray-200 rounded-full flex items-center justify-center text-xs font-bold'>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user-icon lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
-                </div>
-              )
-            }
+      <ProfileButton />
+    </div>
+  )
+}
+
+const ProfileButton = () => {
+  const { profile } = useProfile()
+  const [isEditingProfile, setIsEditingProfile] = useState(false)
+
+  if (!profile) {
+    return (
+      <div className={cn("ml-1 p-[2.5px] rounded-full bg-gradient-to-r from-gray-600 to-gray-400 cursor-pointer", profile && "bg-gradient-to-r from-emerald-600 to-green-400")}>
+        <div className='bg-white rounded-full p-[2.5px] w-10 h-10'>
+          <div className='w-full h-full bg-gray-200 rounded-full flex items-center justify-center text-xs font-bold'>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user-icon lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
           </div>
         </div>
-      </button>
-    </div>
+      </div>
+    )
+  }
+
+  return (
+    <>
+      <Popover>
+        <PopoverTrigger asChild>
+          <button aria-label='Your avatar'>
+            <div className={cn("ml-1 p-[2.5px] rounded-full bg-gradient-to-r from-gray-600 to-gray-400 cursor-pointer", profile && "bg-gradient-to-r from-emerald-600 to-green-400")}>
+              <div className='bg-white rounded-full p-[2.5px] w-10 h-10'>
+                <Avatar className='w-full h-full' {...profile.avatarConfig} />
+              </div>
+            </div>
+          </button>
+        </PopoverTrigger>
+        <PopoverContent
+          side='bottom'
+          align='end'
+          sideOffset={10}
+          className='p-2'
+        >
+          <Button variant='ghost' size='sm' className='w-full cursor-pointer' onClick={() => {
+            setIsEditingProfile(true)
+          }}>
+            Edit profile <PencilIcon className='w-4 h-4' />
+          </Button>
+        </PopoverContent>
+      </Popover>
+
+      <EditProfileDialog open={isEditingProfile} onClose={() => setIsEditingProfile(false)} />
+    </>
   )
 }
