@@ -1,7 +1,6 @@
-const colors = [
+export const stickynoteColors = [
   '#c0e2e1',
   '#e3ebc6',
-  '#fffcdd',
   '#fee8b9',
   '#ffc4c6',
   '#ffd179',
@@ -13,7 +12,6 @@ const colors = [
   '#7ac3e6',
   '#97cfc6',
   '#c6d67d',
-  '#fef7b1',
   '#aacc04',
   '#feea00',
   '#ffab00',
@@ -32,5 +30,5 @@ export const getTextColor = (color: string) => {
 }
 
 export const getRandomColor = () => {
-  return colors[Math.floor(Math.random() * colors.length)]
+  return stickynoteColors[Math.floor(Math.random() * stickynoteColors.length)]
 }

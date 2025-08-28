@@ -15,6 +15,8 @@ import { PencilIcon } from 'lucide-react'
 import { EditProfileDialog } from '~/features/EditProfile/EditProfile'
 import { StickyNote } from '~/components/StickyNote'
 import { getRandomColor } from '~/lib/stickynotes'
+import { ColorPalette } from '~/components/ColorPalette'
+import { AnimatePresence, motion } from 'motion/react'
 
 export function meta({ }: Route.MetaArgs) {
   return [
@@ -87,9 +89,13 @@ const activeUsers = [
 export default function Whiteboard() {
   const { profile } = useProfile()
   const gridRef = useRef<GridRef>(null)
+  const [colorPalettePosition, setColorPalettePosition] = useState<{ x: number, y: number } | null>(null)
 
   const handleSkipToWhiteboard = () => {
     gridRef.current?.focusGrid()
+  }
+
+  const handleColorPaletteClick = (color: string) => {
   }
 
   return (
@@ -114,11 +120,17 @@ export default function Whiteboard() {
           gridSize={GRID_CELL_SIZE}
           minZoom={MIN_ZOOM}
           maxZoom={MAX_ZOOM}
+          onHoldClick={({ x, y }) => setColorPalettePosition({ x, y })}
+          onFastClick={() => setColorPalettePosition(null)}
         >
           <GridContent>
-            <GridItem x={40} y={20}>
-              <StickyNote color={getRandomColor()} content={faker.lorem.sentence()} />
-            </GridItem>
+            <AnimatePresence>
+              {colorPalettePosition && (
+                <GridItem x={colorPalettePosition.x} y={colorPalettePosition.y} disableScale>
+                  <ColorPalette onClick={handleColorPaletteClick} />
+                </GridItem>
+              )}
+            </AnimatePresence>
           </GridContent>
         </Grid>
       </div>

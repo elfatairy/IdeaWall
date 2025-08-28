@@ -2,11 +2,24 @@ import type React from 'react'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { throttle } from '../../lib/utils'
 
-export const useGrid = (width: number, height: number, minZoom: number, maxZoom: number) => {
+interface Props {
+  width: number
+  height: number
+  minZoom: number
+  maxZoom: number
+  disabled?: boolean
+  onFastClick?: ({ x, y }: { x: number; y: number }) => void
+  onHoldClick?: ({ x, y }: { x: number; y: number }) => void
+}
+
+export const useGrid = ({ width, height, minZoom, maxZoom, disabled, onFastClick, onHoldClick }: Props) => {
   const [zoom, setZoom] = useState(1)
   const containerRef = useRef<HTMLDivElement>(null)
-  const [isDragging, setIsDragging] = useState(false)
+  const [isHolding, setIsHolding] = useState(false)
+  const isHoldingRef = useRef(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
+  const holdingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const fastClickTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const [pan, dispatchPan] = useReducer(
     (
       prev: { x: number; y: number },
@@ -86,7 +99,7 @@ export const useGrid = (width: number, height: number, minZoom: number, maxZoom:
   }, [width, height])
 
   useEffect(() => {
-    if (isDragging) {
+    if (isHolding) {
       document.body.style.userSelect = 'none'
     } else {
       document.body.style.userSelect = ''
@@ -95,7 +108,7 @@ export const useGrid = (width: number, height: number, minZoom: number, maxZoom:
     return () => {
       document.body.style.userSelect = ''
     }
-  }, [isDragging])
+  }, [isHolding])
 
   // Zoom handlers
   const handleZoom = useCallback(
@@ -127,59 +140,100 @@ export const useGrid = (width: number, height: number, minZoom: number, maxZoom:
     [handleZoom, zoom]
   )
 
-  // Pan handlers
+  const handleStartHolding = useCallback(
+    ({ x, y }: { x: number; y: number }) => {
+      setIsHolding(true)
+      isHoldingRef.current = true
+      setDragStart({ x, y })
+      if (onHoldClick) {
+        holdingTimeoutRef.current = setTimeout(() => {
+          if (!isHoldingRef.current) {
+            return
+          }
+          onHoldClick({ x: x - width / 2, y: y - height / 2 })
+        }, 300)
+      }
+      if (onFastClick) {
+        fastClickTimeoutRef.current = setTimeout(() => {
+          if (!isHoldingRef.current) {
+            return
+          }
+          onFastClick({ x: x - width / 2, y: y - height / 2 })
+        }, 100)
+      }
+    },
+    [onHoldClick, onFastClick, width, height]
+  )
+
+  const handleDrag = useCallback(
+    ({ x, y }: { x: number; y: number }) => {
+      if (isHolding) {
+        if (holdingTimeoutRef.current) {
+          clearTimeout(holdingTimeoutRef.current)
+        }
+        if (fastClickTimeoutRef.current) {
+          clearTimeout(fastClickTimeoutRef.current)
+        }
+        dispatchPan({ type: 'set', x, y })
+      }
+    },
+    [isHolding]
+  )
+
+  const handleEndHolding = useCallback(() => {
+    setIsHolding(false)
+    isHoldingRef.current = false
+    if (fastClickTimeoutRef.current) {
+      clearTimeout(fastClickTimeoutRef.current)
+    }
+    if (holdingTimeoutRef.current) {
+      clearTimeout(holdingTimeoutRef.current)
+    }
+  }, [])
+
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
       if (e.button === 0) {
-        // Left click only
-        setIsDragging(true)
-        setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y })
+        handleStartHolding({ x: e.clientX - pan.x, y: e.clientY - pan.y })
       }
     },
-    [pan]
+    [handleStartHolding, pan.x, pan.y]
   )
 
   const handleTouchStart = useCallback(
     (e: React.TouchEvent) => {
-      setIsDragging(true)
-      setDragStart({ x: e.touches[0].clientX - pan.x, y: e.touches[0].clientY - pan.y })
+      handleStartHolding({ x: e.touches[0].clientX - pan.x, y: e.touches[0].clientY - pan.y })
     },
-    [pan]
+    [handleStartHolding, pan.x, pan.y]
+  )
+
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      handleDrag({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y
+      })
+    },
+    [handleDrag, dragStart.x, dragStart.y]
   )
 
   const handleTouchMove = useCallback(
     (e: React.TouchEvent) => {
-      if (isDragging) {
-        dispatchPan({
-          type: 'set',
-          x: e.touches[0].clientX - dragStart.x,
-          y: e.touches[0].clientY - dragStart.y
-        })
-      }
+      handleDrag({
+        x: e.touches[0].clientX - dragStart.x,
+        y: e.touches[0].clientY - dragStart.y
+      })
     },
-    [isDragging, dragStart.x, dragStart.y]
-  )
-
-  const handleTouchEnd = useCallback(() => {
-    setIsDragging(false)
-  }, [])
-
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent) => {
-      if (isDragging) {
-        dispatchPan({
-          type: 'set',
-          x: e.clientX - dragStart.x,
-          y: e.clientY - dragStart.y
-        })
-      }
-    },
-    [isDragging, dragStart.x, dragStart.y]
+    [handleDrag, dragStart.x, dragStart.y]
   )
 
   const handleMouseUp = useCallback(() => {
-    setIsDragging(false)
-  }, [])
+    handleEndHolding()
+  }, [handleEndHolding])
+
+  const handleTouchEnd = useCallback(() => {
+    handleEndHolding()
+  }, [handleEndHolding])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'ArrowUp') {

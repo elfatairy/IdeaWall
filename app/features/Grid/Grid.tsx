@@ -1,7 +1,7 @@
 import { Slider } from '~/components/ui/slider'
 import { useGrid } from './useGrid'
 import type React from 'react'
-import { createContext, use, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react'
+import { createContext, use, useCallback, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react'
 import { cn } from '~/lib/utils'
 
 export interface GridRef {
@@ -17,6 +17,8 @@ interface GridProps {
   maxZoom?: number
   ref?: React.RefObject<GridRef | null>
   disabled?: boolean
+  onFastClick?: ({ x, y }: { x: number; y: number }) => void
+  onHoldClick?: ({ x, y }: { x: number; y: number }) => void
 }
 
 const GridContext = createContext<{
@@ -37,14 +39,18 @@ export default function Grid({
   minZoom = .1,
   maxZoom = 1,
   ref = undefined,
-  disabled = false
+  disabled = false,
+  onFastClick = undefined,
+  onHoldClick = undefined
 }: GridProps) {
-  const { zoom, pan, containerRef, handleWheel, handleMouseDown, handleMouseMove, handleMouseUp, handleZoom, handleKeyDown, handleTouchStart, handleTouchMove, handleTouchEnd } = useGrid(
+  const { zoom, pan, containerRef, handleWheel, handleMouseDown, handleMouseMove, handleMouseUp, handleZoom, handleKeyDown, handleTouchStart, handleTouchMove, handleTouchEnd } = useGrid({
     width,
     height,
     minZoom,
-    maxZoom
-  )
+    maxZoom,
+    onFastClick,
+    onHoldClick
+  })
   const scaledGridSize = gridSize * zoom
 
   useImperativeHandle(ref, () => ({
@@ -128,14 +134,39 @@ export default function Grid({
   )
 }
 
-export const GridContent = ({ children }: { children: React.ReactNode }) => {
+const useGridContentContext = () => {
   const context = use(GridContext)
-
   if (!context) {
-    throw new Error('GridContent must be used within a Grid')
+    throw new Error('GridContent must be used within a GridContent')
   }
+  return context
+}
 
-  const { width, height, pan } = context
+export const GridContent = ({ children, onHoldClick }: { children: React.ReactNode, onHoldClick?: () => void }) => {
+  const { width, height, pan } = useGridContentContext()
+  const isHoldingRef = useRef(false)
+
+  const handleHoldClick = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault()
+    if (isHoldingRef.current) {
+      return
+    }
+
+    isHoldingRef.current = true
+
+    if (onHoldClick) {
+      setTimeout(() => {
+        if (!isHoldingRef.current) {
+          return
+        }
+        onHoldClick()
+      }, 500)
+    }
+  }, [onHoldClick])
+
+  const handleUp = useCallback(() => {
+    isHoldingRef.current = false
+  }, [])
 
   return (
     <div
@@ -145,22 +176,20 @@ export const GridContent = ({ children }: { children: React.ReactNode }) => {
         height: height,
         transform: `translate(${pan.x}px, ${pan.y}px)`
       }}
+      onMouseDown={handleHoldClick}
+      onTouchStart={handleHoldClick}
+      onMouseUp={handleUp}
+      onTouchEnd={handleUp}
     >
       {children}
     </div>
   )
 }
 
-export const GridItem = ({ children, x, y }: { children: React.ReactNode, x: number, y: number }) => {
-  const context = use(GridContext)
+export const GridItem = ({ children, x, y, disableScale = false }: { children: React.ReactNode, x: number, y: number, disableScale?: boolean }) => {
+  const { width, height, zoom } = useGridContentContext()
   const itemRef = useRef<HTMLDivElement>(null)
   const [itemSize, setItemSize] = useState<{ width: number, height: number }>({ width: 0, height: 0 })
-
-  if (!context) {
-    throw new Error('GridItem must be used within a Grid')
-  }
-
-  const { width, height, zoom } = context
 
   useLayoutEffect(() => {
     if (itemRef.current) {
@@ -175,7 +204,7 @@ export const GridItem = ({ children, x, y }: { children: React.ReactNode, x: num
       style={{
         top: height / 2,
         left: width / 2,
-        transform: `translate(${-itemSize.width / 2 + x * zoom}px, ${-itemSize.height / 2 + y * zoom}px) scale(${zoom})`
+        transform: `translate(${-itemSize.width / 2 + x * zoom}px, ${-itemSize.height / 2 + y * zoom}px) ${disableScale ? '' : `scale(${zoom})`}`
       }}
     >
       {children}
