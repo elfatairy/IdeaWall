@@ -1,4 +1,4 @@
-import Grid, { type GridRef } from '~/features/Grid/Grid'
+import Grid, { GridContent, GridItem, type GridRef } from '~/features/Grid/Grid'
 import type { Route } from './+types/whiteboard'
 import { GRID_CELL_SIZE, GRID_HEIGHT, GRID_WIDTH, MAX_ZOOM, MIN_ZOOM } from '~/constants/grid'
 import Avatar, { genConfig } from 'react-nice-avatar'
@@ -13,6 +13,8 @@ import { CreateProfileDialog } from '~/features/CreateProfile/CreateProfile'
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover'
 import { LogOutIcon, PencilIcon } from 'lucide-react'
 import { EditProfileDialog } from '~/features/EditProfile/EditProfile'
+import { StickyNote } from '~/components/StickyNote'
+import { getRandomColor } from '~/lib/stickynotes'
 
 export function meta({ }: Route.MetaArgs) {
   return [
@@ -93,12 +95,12 @@ export default function Whiteboard() {
   return (
     <>
       <button
-        className='fixed top-0 left-0 z-1000 opacity-0 focus:opacity-10000 transition-opacity duration-300 bg-white p-2 underline'
+        className='fixed top-0 left-0 z-1000 opacity-0 focus:opacity-10000 transition-opacity duration-300 bg-white p-2 underline pointer-events-none focus:pointer-events-auto'
         onClick={handleSkipToWhiteboard}
       >
         Skip to white board
       </button>
-      <header className='fixed z-10 flex w-full items-center justify-between px-4 py-2'>
+      <header className='fixed z-10 flex w-full items-center justify-between px-4 py-2 pointer-events-none'>
         <img src="/logo.svg" alt="IdeaWall" className='h-10' />
 
         <HeaderActions />
@@ -112,7 +114,13 @@ export default function Whiteboard() {
           gridSize={GRID_CELL_SIZE}
           minZoom={MIN_ZOOM}
           maxZoom={MAX_ZOOM}
-        />
+        >
+          <GridContent>
+            <GridItem x={40} y={20}>
+              <StickyNote color={getRandomColor()} content={faker.lorem.sentence()} />
+            </GridItem>
+          </GridContent>
+        </Grid>
       </div>
 
       {
@@ -160,7 +168,7 @@ function HeaderActions() {
   }
 
   return (
-    <div className='flex flex-row gap-1 bg-white rounded-lg py-1 pl-2 pr-3 mt-1 shadow-lg items-center'>
+    <div className='flex flex-row gap-1 bg-white rounded-lg py-1 pl-2 pr-3 mt-1 shadow-lg items-center pointer-events-auto'>
       {renderOnlineUsers()}
 
       <Button size='icon' variant='ghost' aria-label='Share board link' onClick={() => {

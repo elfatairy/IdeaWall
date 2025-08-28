@@ -1,9 +1,11 @@
 import type React from 'react'
-import { useCallback, useLayoutEffect, useReducer, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react'
 
 export const useGrid = (width: number, height: number, minZoom: number, maxZoom: number) => {
   const [zoom, setZoom] = useState(1)
   const containerRef = useRef<HTMLDivElement>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   const [pan, dispatchPan] = useReducer(
     (
       prev: { x: number; y: number },
@@ -61,8 +63,6 @@ export const useGrid = (width: number, height: number, minZoom: number, maxZoom:
       y: -height / 2
     }
   )
-  const [isDragging, setIsDragging] = useState(false)
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
 
   const resetPan = () => {
     const rect = containerRef.current?.getBoundingClientRect()
@@ -83,6 +83,18 @@ export const useGrid = (width: number, height: number, minZoom: number, maxZoom:
       })
     }
   }, [width, height])
+
+  useEffect(() => {
+    if (isDragging) {
+      document.body.style.userSelect = 'none'
+    } else {
+      document.body.style.userSelect = ''
+    }
+
+    return () => {
+      document.body.style.userSelect = ''
+    }
+  }, [isDragging])
 
   // Zoom handlers
   const handleZoom = useCallback(

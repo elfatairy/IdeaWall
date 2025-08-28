@@ -1,7 +1,7 @@
 import { Slider } from '~/components/ui/slider'
 import { useGrid } from './useGrid'
 import type React from 'react'
-import { useImperativeHandle } from 'react'
+import { createContext, use, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react'
 import { cn } from '~/lib/utils'
 
 export interface GridRef {
@@ -9,6 +9,7 @@ export interface GridRef {
 }
 
 interface GridProps {
+  children?: React.ReactNode
   width?: number
   height?: number
   gridSize?: number
@@ -18,7 +19,18 @@ interface GridProps {
   disabled?: boolean
 }
 
+const GridContext = createContext<{
+  width: number
+  height: number
+  pan: {
+    x: number
+    y: number
+  }
+  zoom: number
+} | null>(null)
+
 export default function Grid({
+  children = null,
   width = window.innerWidth * 10,
   height = window.innerHeight * 10,
   gridSize = 20,
@@ -51,7 +63,7 @@ export default function Grid({
       {/* Grid Container */}
       <div
         ref={containerRef}
-        className={cn('h-full w-full', !disabled && 'cursor-grab active:cursor-grabbing')}
+        className={cn('relative h-full w-full', !disabled && 'cursor-grab active:cursor-grabbing')}
         tabIndex={0}
         onWheel={disabled ? undefined : handleWheel}
         onMouseDown={disabled ? undefined : handleMouseDown}
@@ -104,7 +116,69 @@ export default function Grid({
           <rect width='100%' height='100%' fill='url(#grid-2)' />
           <rect width='100%' height='100%' fill='url(#grid-3)' />
         </svg>
+        {
+          children && (
+            <GridContext value={{ width: width * zoom, height: height * zoom, pan, zoom }}>
+              {children}
+            </GridContext>
+          )
+        }
       </div>
+    </div>
+  )
+}
+
+export const GridContent = ({ children }: { children: React.ReactNode }) => {
+  const context = use(GridContext)
+
+  if (!context) {
+    throw new Error('GridContent must be used within a Grid')
+  }
+
+  const { width, height, pan, zoom } = context
+
+  return (
+    <div
+      className='absolute top-0 left-0'
+      style={{
+        width: width,
+        height: height,
+        transform: `translate(${pan.x}px, ${pan.y}px)`
+      }}
+    >
+      {children}
+    </div>
+  )
+}
+
+export const GridItem = ({ children, x, y }: { children: React.ReactNode, x: number, y: number }) => {
+  const context = use(GridContext)
+  const itemRef = useRef<HTMLDivElement>(null)
+  const [itemSize, setItemSize] = useState<{ width: number, height: number }>({ width: 0, height: 0 })
+
+  if (!context) {
+    throw new Error('GridItem must be used within a Grid')
+  }
+
+  const { width, height, zoom } = context
+
+  useLayoutEffect(() => {
+    if (itemRef.current) {
+      setItemSize({ width: itemRef.current.offsetWidth, height: itemRef.current.offsetHeight })
+    }
+  }, [])
+
+  return (
+    <div
+      ref={itemRef}
+      className='absolute z-10'
+      style={{
+        top: height / 2,
+        left: width / 2,
+        transform: `translate(${-itemSize.width / 2 + x * zoom}px, ${-itemSize.height / 2 + y * zoom}px) scale(${zoom})`
+      }}
+    >
+      {children}
     </div>
   )
 }
