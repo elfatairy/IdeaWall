@@ -135,7 +135,7 @@ export const GridContent = ({ children }: { children: React.ReactNode }) => {
     throw new Error('GridContent must be used within a Grid')
   }
 
-  const { width, height, pan, zoom } = context
+  const { width, height, pan } = context
 
   return (
     <div

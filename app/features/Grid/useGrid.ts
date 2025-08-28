@@ -1,5 +1,6 @@
 import type React from 'react'
-import { useCallback, useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react'
+import { throttle } from '../../lib/utils'
 
 export const useGrid = (width: number, height: number, minZoom: number, maxZoom: number) => {
   const [zoom, setZoom] = useState(1)
@@ -111,17 +112,18 @@ export const useGrid = (width: number, height: number, minZoom: number, maxZoom:
   )
 
   // Mouse wheel zoom
-  const handleWheel = useCallback(
-    (e: React.WheelEvent) => {
-      const rect = containerRef.current?.getBoundingClientRect()
-      if (!rect) {
-        return
-      }
+  const handleWheel = useMemo(
+    () =>
+      throttle((e: React.WheelEvent) => {
+        const rect = containerRef.current?.getBoundingClientRect()
+        if (!rect) {
+          return
+        }
 
-      const delta = e.deltaY > 0 ? 0.9 : 1.1
+        const delta = e.deltaY > 0 ? 0.9 : 1.1
 
-      handleZoom(delta * zoom)
-    },
+        handleZoom(delta * zoom)
+      }, 33),
     [handleZoom, zoom]
   )
 
