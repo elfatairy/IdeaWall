@@ -22,7 +22,6 @@ export function CreateProfileDialog({ open }: { open: boolean }) {
     if (result.success) {
       toast.success('Profile created successfully')
     } else {
-      console.error(result.error)
       toast.error('Failed to create profile')
     }
   }

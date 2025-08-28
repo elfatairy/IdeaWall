@@ -6,6 +6,9 @@ import globals from 'globals'
 
 export default [
   {
+    ignores: ['**/*.css', '**/*.scss', '**/*.sass', '**/*.less', '.react-router/**']
+  },
+  {
     files: ['**/*.{js,jsx,mjs,cjs,ts,tsx}'],
     plugins: {
       react,
@@ -64,7 +67,7 @@ export default [
       'comma-style': ['error', 'last'],
       'computed-property-spacing': ['error', 'never'],
       'func-call-spacing': ['error', 'never'],
-      indent: ['error', 2, { SwitchCase: 1 }],
+      indent: 'off', // Disabled due to infinite recursion issues with complex JSX
       'key-spacing': ['error', { beforeColon: false, afterColon: true }],
       'keyword-spacing': ['error', { before: true, after: true }],
       'no-multiple-empty-lines': ['error', { max: 1 }],
@@ -137,7 +140,11 @@ export default [
 
       // React Hooks rules
       'reactHooks/rules-of-hooks': 'warn',
-      'reactHooks/exhaustive-deps': 'warn'
+      'reactHooks/exhaustive-deps': 'warn',
+
+      // TypeScript ESLint rules
+      '@typescript-eslint/no-unused-vars': 'warn',
+      '@typescript-eslint/no-shadow': 'warn'
     },
     settings: {
       react: {

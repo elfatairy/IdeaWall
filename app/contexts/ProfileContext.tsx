@@ -24,17 +24,17 @@ export const ProfileProvider = ({ children }: { children: React.ReactNode }) => 
 
   useEffect(() => {
     const fetchUser = async () => {
-      const profile = localStorage.getItem('profile')
-      if (profile) {
-        setProfile(JSON.parse(profile))
+      const savedProfile = localStorage.getItem('profile')
+      if (savedProfile) {
+        setProfile(JSON.parse(savedProfile))
       }
     }
     fetchUser()
   }, [])
 
-  const updateProfile = async (profile: User) => {
-    setProfile(profile)
-    localStorage.setItem('profile', JSON.stringify(profile))
+  const updateProfile = async (newProfile: User) => {
+    setProfile(newProfile)
+    localStorage.setItem('profile', JSON.stringify(newProfile))
   }
 
   return <ProfileContext.Provider value={{ profile, setProfile: updateProfile }}>{children}</ProfileContext.Provider>

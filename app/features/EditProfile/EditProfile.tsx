@@ -19,7 +19,6 @@ export function EditProfileDialog({ open, onClose }: { open: boolean, onClose: (
       toast.success('Profile updated successfully')
       onClose()
     } else {
-      console.error(result.error)
       toast.error('Failed to update profile')
     }
   }
@@ -39,7 +38,7 @@ export function EditProfileDialog({ open, onClose }: { open: boolean, onClose: (
   )
 }
 
-function NameAvatarDialog({ onSubmit, isSubmitting, profile, onClose }: { onSubmit: (name: string, avatar: AvatarFullConfig) => void, isSubmitting: boolean, profile: User, onClose: () => void }) {
+function NameAvatarDialog({ onSubmit, isSubmitting, profile }: { onSubmit: (name: string, avatar: AvatarFullConfig) => void, isSubmitting: boolean, profile: User }) {
   const id = useId()
   const [avatar, setAvatar] = useState<AvatarFullConfig>(profile.avatarConfig)
   const [name, setName] = useState<string>(profile.name)

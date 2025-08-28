@@ -74,7 +74,7 @@
     "space-in-parens": ["error", "never"],
     "space-infix-ops": "warn",
     "space-unary-ops": ["error", { "words": true, "nonwords": false }],
-
+    
     // React rules
     "react/jsx-uses-react": "off",
     "react/jsx-uses-vars": "warn",
