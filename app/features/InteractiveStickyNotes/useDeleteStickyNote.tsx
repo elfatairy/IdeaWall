@@ -1,17 +1,17 @@
 import { supabase } from '~/supabase'
-import { useApi } from './useApi'
+import { useApi } from '../../hooks/useApi'
 import { useProfile } from '~/contexts/ProfileContext'
 
-export const useCreateStickyNote = () => {
+export const useDeleteStickyNote = () => {
   const { profile } = useProfile()
-  const createStickyNote = async (params: { content: string, color: string, position: { x: number, y: number } }) => {
-    const { content, color, position } = params
+  const deleteStickyNote = async (id: string) => {
     if (!profile) {
       throw new Error('User not found')
     }
     const { data, error } = await supabase
       .from('sticky_notes')
-      .insert({ content, color, position, user_id: profile.id })
+      .delete()
+      .eq('id', id)
       .select()
       .single()
     if (error) {
@@ -20,6 +20,6 @@ export const useCreateStickyNote = () => {
     return data
   }
   return useApi({
-    apiFunction: createStickyNote
+    apiFunction: deleteStickyNote
   })
 }

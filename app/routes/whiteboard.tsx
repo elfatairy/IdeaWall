@@ -15,7 +15,7 @@ import { PencilIcon } from 'lucide-react'
 import { EditProfileDialog } from '~/features/EditProfile/EditProfile'
 import { ColorPalette } from '~/components/ColorPalette'
 import { AnimatePresence, motion } from 'motion/react'
-import { useCreateStickyNote } from '~/hooks/useCreateStickyNote'
+import { useCreateStickyNote } from '~/features/InteractiveStickyNotes/useCreateStickyNote'
 import { useStickyNotes } from '~/features/InteractiveStickyNotes/useStickyNotes'
 import { StickyNotes } from '~/features/InteractiveStickyNotes/StickyNotes'
 
@@ -91,7 +91,7 @@ export default function Whiteboard() {
   const { profile } = useProfile()
   const gridRef = useRef<GridRef>(null)
   const [colorPalettePosition, setColorPalettePosition] = useState<{ x: number, y: number } | null>(null)
-  const { stickyNotes, createStickyNote } = useStickyNotes()
+  const { stickyNotes, createStickyNote, deleteStickyNote } = useStickyNotes()
 
   const handleSkipToWhiteboard = () => {
     gridRef.current?.focusGrid()
@@ -102,6 +102,13 @@ export default function Whiteboard() {
     const result = await createStickyNote({ content: '', color, position: colorPalettePosition! })
     if (!result.success) {
       toast.error('Failed to create sticky note')
+    }
+  }
+
+  const handleDeleteStickyNote = async (id: string) => {
+    const result = await deleteStickyNote(id)
+    if (!result.success) {
+      toast.error('Failed to delete sticky note')
     }
   }
 
@@ -133,6 +140,7 @@ export default function Whiteboard() {
           <GridContent>
             <StickyNotes
               stickyNotes={stickyNotes}
+              onDeleteStickyNote={handleDeleteStickyNote}
               render={(position, renderStickyNote) => (
                 <GridItem x={position.x} y={position.y}>
                   {renderStickyNote()}

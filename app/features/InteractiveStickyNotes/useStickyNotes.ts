@@ -2,11 +2,13 @@ import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '~/supabase'
 import type { StickyNote } from '~/types/stickynote'
 import { useApi } from '~/hooks/useApi'
-import { useCreateStickyNote } from '~/hooks/useCreateStickyNote'
+import { useCreateStickyNote } from '~/features/InteractiveStickyNotes/useCreateStickyNote'
 import type { Position } from '~/types/general'
 import { useProfile } from '~/contexts/ProfileContext'
+import { useDeleteStickyNote } from './useDeleteStickyNote'
 
 const EVENT_STICKY_NOTES_CREATED = 'sticky_notes_created'
+const EVENT_STICKY_NOTES_DELETED = 'sticky_notes_deleted'
 
 export const useStickyNotes = () => {
   const [stickyNotes, setStickyNotes] = useState<StickyNote[]>([])
@@ -14,6 +16,7 @@ export const useStickyNotes = () => {
   const { profile } = useProfile()
   const [isConnected, setIsConnected] = useState(false)
   const { call: _createStickyNote } = useCreateStickyNote()
+  const { call: _deleteStickyNote } = useDeleteStickyNote()
   const { call: fetchStickyNotes } = useApi({
     apiFunction: async () => {
       const { data, error } = await supabase.from('sticky_notes').select('*')
@@ -35,8 +38,10 @@ export const useStickyNotes = () => {
     const newChannel = supabase.channel('sticky-notes')
     newChannel
       .on('broadcast', { event: EVENT_STICKY_NOTES_CREATED }, (payload) => {
-        console.log('payload', payload)
         setStickyNotes((current) => [...current, payload.payload as StickyNote])
+      })
+      .on('broadcast', { event: EVENT_STICKY_NOTES_DELETED }, (payload) => {
+        setStickyNotes((current) => current.filter((stickyNote) => stickyNote.id !== (payload.payload as string)))
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
@@ -53,17 +58,16 @@ export const useStickyNotes = () => {
 
   const createStickyNote = useCallback(
     async (stickyNote: Pick<StickyNote, 'content' | 'color' | 'position'>) => {
-      setStickyNotes((current) => [
-        ...current,
-        {
-          ...stickyNote,
-          created_at: new Date().toISOString(),
-          id: crypto.randomUUID(),
-          updated_at: new Date().toISOString(),
-          user_id: profile!.id
-        }
-      ])
+      const tempStickyNote = {
+        ...stickyNote,
+        created_at: new Date().toISOString(),
+        id: crypto.randomUUID(),
+        updated_at: new Date().toISOString(),
+        user_id: profile!.id
+      }
+      setStickyNotes((current) => [...current, tempStickyNote])
       const result = await _createStickyNote({
+        id: tempStickyNote.id,
         content: stickyNote.content,
         color: stickyNote.color,
         position: stickyNote.position as Position
@@ -72,13 +76,31 @@ export const useStickyNotes = () => {
         channel?.send({
           type: 'broadcast',
           event: EVENT_STICKY_NOTES_CREATED,
-          payload: stickyNote
+          payload: result.data
+        })
+      } else {
+        setStickyNotes((current) => current.filter((stickyNote) => stickyNote.id !== tempStickyNote.id))
+      }
+      return result
+    },
+    [_createStickyNote, profile, channel]
+  )
+
+  const deleteStickyNote = useCallback(
+    async (id: string) => {
+      setStickyNotes((current) => current.filter((stickyNote) => stickyNote.id !== id))
+      const result = await _deleteStickyNote(id)
+      if (result.success) {
+        channel?.send({
+          type: 'broadcast',
+          event: EVENT_STICKY_NOTES_DELETED,
+          payload: id
         })
       }
       return result
     },
-    [channel, _createStickyNote]
+    [_deleteStickyNote, channel]
   )
 
-  return { stickyNotes, isConnected, createStickyNote }
+  return { stickyNotes, isConnected, createStickyNote, deleteStickyNote }
 }
