@@ -98,7 +98,7 @@ export default function Whiteboard() {
 
   const handleColorPaletteClick = (color: string) => {
     setColorPalettePosition(null)
-    createStickyNote({ content: '', color, position: colorPalettePosition! }, {
+    createStickyNote({ id: crypto.randomUUID(), content: '', color, position: colorPalettePosition! }, {
       onError: () => {
         toast.error('Failed to create sticky note')
       }

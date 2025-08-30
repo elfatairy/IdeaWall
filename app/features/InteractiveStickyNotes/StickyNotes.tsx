@@ -19,6 +19,7 @@ export function StickyNotes({ stickyNotes, onDeleteStickyNote, render }: Props) 
         <Fragment key={stickyNote.id}>
           {render(stickyNote.position as Position, () => (
             <StickyNote
+              id={stickyNote.id}
               color={stickyNote.color}
               content={stickyNote.content}
               owner={stickyNote.user_id === profile?.id}

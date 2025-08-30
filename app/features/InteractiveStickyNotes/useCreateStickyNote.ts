@@ -62,9 +62,6 @@ export const useCreateStickyNote = (channel: ReturnType<typeof supabase.channel>
         event: EVENT_STICKY_NOTES_CREATED,
         payload: data
       })
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['sticky_notes'] })
     }
   })
 }

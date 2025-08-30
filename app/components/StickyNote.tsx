@@ -9,9 +9,10 @@ interface Props {
   content: string
   owner: boolean
   onDelete: () => void
+  id: string
 }
 
-export function StickyNote({ color, content, owner, onDelete }: Props) {
+export function StickyNote({ color, content, owner, onDelete, id }: Props) {
   return (
     <motion.div
       className={cn('relative w-48 min-h-36 rounded-sm shadow-md hover:shadow-lg cursor-default group', owner && 'cursor-text')}
@@ -25,6 +26,7 @@ export function StickyNote({ color, content, owner, onDelete }: Props) {
       }}
       whileHover={{ rotate: 0, scale: 1.05 }}
       exit={{ opacity: 0, y: -20 }}
+      layoutId={`sticky-note-${id}`}
     >
       <div className='p-4 h-full flex flex-col'>
         <p className='text-sm leading-relaxed font-sans m-0 break-words font-semibold' style={{ color: getTextColor(color) }}>
