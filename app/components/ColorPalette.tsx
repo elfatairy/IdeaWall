@@ -7,7 +7,7 @@ function ColorWheelSet({ colors, width, onClick }: { colors: string[], width: nu
     colors.map((color, index) => (
       <motion.button
         key={color}
-        className='w-13 h-13 absolute rounded-full cursor-pointer pointer-events-auto'
+        className='w-13 h-13 absolute rounded-full cursor-pointer pointer-events-auto shadow-lg'
         initial={{ opacity: 0, scale: 0, translateX: -26, translateY: -26 }}
         animate={{
           opacity: 1,
