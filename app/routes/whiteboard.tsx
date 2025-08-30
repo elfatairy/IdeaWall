@@ -17,6 +17,7 @@ import { StickyNote } from '~/components/StickyNote'
 import { getRandomColor } from '~/lib/stickynotes'
 import { ColorPalette } from '~/components/ColorPalette'
 import { AnimatePresence, motion } from 'motion/react'
+import { useCreateStickyNote } from '~/hooks/useCreateStickyNote'
 
 export function meta({ }: Route.MetaArgs) {
   return [
@@ -90,12 +91,19 @@ export default function Whiteboard() {
   const { profile } = useProfile()
   const gridRef = useRef<GridRef>(null)
   const [colorPalettePosition, setColorPalettePosition] = useState<{ x: number, y: number } | null>(null)
+  const { call: createStickyNote } = useCreateStickyNote()
 
   const handleSkipToWhiteboard = () => {
     gridRef.current?.focusGrid()
   }
 
-  const handleColorPaletteClick = (color: string) => {
+  const handleColorPaletteClick = async (color: string) => {
+    const result = await createStickyNote({ content: '', color, position: colorPalettePosition! })
+    if (result.success) {
+      setColorPalettePosition(null)
+    } else {
+      toast.error('Failed to create sticky note')
+    }
   }
 
   return (

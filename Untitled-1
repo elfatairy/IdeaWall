@@ -1,0 +1,5 @@
+type F = <T = undefined>(params?: T) => any
+
+const f: F = () => 1
+
+f()
