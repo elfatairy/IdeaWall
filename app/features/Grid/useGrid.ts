@@ -1,102 +1,89 @@
 import type React from 'react'
-import { useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useDeferredValue } from 'react'
 import { throttle } from '../../lib/utils'
+import { useMotionValue } from 'motion/react'
 
 interface Props {
   width: number
   height: number
   minZoom: number
   maxZoom: number
+  gridCellSize: number
   disabled?: boolean
   onFastClick?: ({ x, y }: { x: number; y: number }) => void
   onHoldClick?: ({ x, y }: { x: number; y: number }) => void
 }
 
 export const useGrid = ({ width, height, minZoom, maxZoom, disabled, onFastClick, onHoldClick }: Props) => {
-  const [zoom, setZoom] = useState(1)
+  const x = useMotionValue(0)
+  const y = useMotionValue(0)
+  const zoom = useMotionValue(1)
+  const [zoomDisplayValue, setZoomDisplayValue] = useState(1)
+  const zoomDisplayValueDeferred = useDeferredValue(zoomDisplayValue)
   const containerRef = useRef<HTMLDivElement>(null)
   const [isHolding, setIsHolding] = useState(false)
   const isHoldingRef = useRef(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   const holdingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const fastClickTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const [pan, dispatchPan] = useReducer(
-    (
-      prev: { x: number; y: number },
-      action: {
-        type: 'set' | 'move' | 'zoom' | 'reset'
-        x?: number
-        y?: number
-        prevZoom?: number
-        newZoom?: number
-      }
-    ) => {
-      const rect = containerRef.current?.getBoundingClientRect()
-      if (!rect) {
-        return prev
-      }
-      const rectWidth = rect.width
-      const rectHeight = rect.height
 
-      switch (action.type) {
-        case 'set':
-          if (!action.x || !action.y) {
-            return prev
-          }
-
-          return {
-            x: Math.max(Math.min(0, action.x), rectWidth - width * zoom),
-            y: Math.max(Math.min(0, action.y), rectHeight - height * zoom)
-          }
-        case 'move':
-          return {
-            x: Math.max(Math.min(0, prev.x + (action.x ?? 0)), rectWidth - width * zoom),
-            y: Math.max(Math.min(0, prev.y + (action.y ?? 0)), rectHeight - height * zoom)
-          }
-        case 'zoom':
-          if (!action.newZoom || !action.prevZoom) {
-            return prev
-          }
-          const newZoom = Math.max(minZoom, Math.min(maxZoom, action.newZoom))
-          const zoomRatio = newZoom / action.prevZoom
-          const newX = ((1 - zoomRatio) * rectWidth) / 2 + prev.x * zoomRatio
-          const newY = ((1 - zoomRatio) * rectHeight) / 2 + prev.y * zoomRatio
-          return {
-            x: Math.max(Math.min(0, newX), rectWidth - width * newZoom),
-            y: Math.max(Math.min(0, newY), rectHeight - height * newZoom)
-          }
-        case 'reset':
-          return {
-            x: rectWidth / 2 - width / 2,
-            y: rectHeight / 2 - height / 2
-          }
-      }
-    },
-    {
-      x: -width / 2,
-      y: -height / 2
+  const getViewPort = useCallback(() => {
+    const rect = containerRef.current?.getBoundingClientRect()
+    if (!rect) {
+      return { width: 0, height: 0 }
     }
+    return rect
+  }, [containerRef])
+
+  const setPan = useCallback(
+    (newPosition: { x: number; y: number }) => {
+      const viewPort = getViewPort()
+
+      x.set(Math.max(Math.min(0, newPosition.x), viewPort.width - width * zoom.get()))
+      y.set(Math.max(Math.min(0, newPosition.y), viewPort.height - height * zoom.get()))
+    },
+    [getViewPort, x, width, zoom, y, height]
   )
 
-  const resetPan = () => {
-    const rect = containerRef.current?.getBoundingClientRect()
-    if (rect) {
-      dispatchPan({
-        type: 'reset'
-      })
+  const movePan = useCallback(
+    (distance: { x?: number; y?: number }) => {
+      setPan({ x: x.get() + (distance.x ?? 0), y: y.get() + (distance.y ?? 0) })
+    },
+    [setPan, x, y]
+  )
+
+  const setZoom = useCallback(
+    (newZoom: number) => {
+      const viewPort = getViewPort()
+      if (!viewPort) {
+        return
+      }
+      const rectWidth = viewPort.width
+      const rectHeight = viewPort.height
+      newZoom = Math.max(minZoom, Math.min(maxZoom, newZoom))
+      const zoomRatio = newZoom / zoom.get()
+      const newX = ((1 - zoomRatio) * rectWidth) / 2 + x.get() * zoomRatio
+      const newY = ((1 - zoomRatio) * rectHeight) / 2 + y.get() * zoomRatio
+      x.set(Math.max(Math.min(0, newX), rectWidth - width * newZoom))
+      y.set(Math.max(Math.min(0, newY), rectHeight - height * newZoom))
+
+      zoom.set(newZoom)
+      setZoomDisplayValue(newZoom)
+    },
+    [zoom, setZoomDisplayValue, getViewPort, minZoom, maxZoom, width, height, x, y]
+  )
+
+  const resetPan = useCallback(() => {
+    const viewPort = getViewPort()
+    if (viewPort) {
+      x.set(viewPort.width / 2 - width / 2)
+      y.set(viewPort.height / 2 - height / 2)
     }
-  }
+  }, [getViewPort, width, height, x, y])
 
   useLayoutEffect(() => {
-    const rect = containerRef.current?.getBoundingClientRect()
-    if (rect) {
-      dispatchPan({
-        type: 'set',
-        x: rect.width / 2 - width / 2,
-        y: rect.height / 2 - height / 2
-      })
-    }
-  }, [width, height])
+    resetPan()
+  }, [resetPan])
 
   useEffect(() => {
     if (isHolding) {
@@ -115,13 +102,8 @@ export const useGrid = ({ width, height, minZoom, maxZoom, disabled, onFastClick
     (newZoom: number) => {
       newZoom = Math.max(minZoom, Math.min(maxZoom, newZoom))
       setZoom(newZoom)
-      dispatchPan({
-        type: 'zoom',
-        prevZoom: zoom,
-        newZoom
-      })
     },
-    [minZoom, maxZoom, zoom]
+    [minZoom, maxZoom, setZoom]
   )
 
   // Mouse wheel zoom
@@ -135,22 +117,22 @@ export const useGrid = ({ width, height, minZoom, maxZoom, disabled, onFastClick
 
         const delta = e.deltaY > 0 ? 0.9 : 1.1
 
-        handleZoom(delta * zoom)
+        handleZoom(delta * zoom.get())
       }, 33),
     [handleZoom, zoom]
   )
 
   const handleStartHolding = useCallback(
-    ({ x, y }: { x: number; y: number }) => {
+    (position: { x: number; y: number }) => {
       setIsHolding(true)
       isHoldingRef.current = true
-      setDragStart({ x, y })
+      setDragStart(position)
       if (onHoldClick) {
         holdingTimeoutRef.current = setTimeout(() => {
           if (!isHoldingRef.current) {
             return
           }
-          onHoldClick({ x: x - width / 2, y: y - height / 2 })
+          onHoldClick({ x: position.x - (width * zoom.get()) / 2, y: position.y - (height * zoom.get()) / 2 })
         }, 300)
       }
       if (onFastClick) {
@@ -158,15 +140,15 @@ export const useGrid = ({ width, height, minZoom, maxZoom, disabled, onFastClick
           if (!isHoldingRef.current) {
             return
           }
-          onFastClick({ x: x - width / 2, y: y - height / 2 })
+          onFastClick({ x: position.x - (width * zoom.get()) / 2, y: position.y - (height * zoom.get()) / 2 })
         }, 100)
       }
     },
-    [onHoldClick, onFastClick, width, height]
+    [onHoldClick, onFastClick, width, zoom, height]
   )
 
   const handleDrag = useCallback(
-    ({ x, y }: { x: number; y: number }) => {
+    (position: { x: number; y: number }) => {
       if (isHolding) {
         if (holdingTimeoutRef.current) {
           clearTimeout(holdingTimeoutRef.current)
@@ -174,10 +156,10 @@ export const useGrid = ({ width, height, minZoom, maxZoom, disabled, onFastClick
         if (fastClickTimeoutRef.current) {
           clearTimeout(fastClickTimeoutRef.current)
         }
-        dispatchPan({ type: 'set', x, y })
+        setPan(position)
       }
     },
-    [isHolding]
+    [isHolding, setPan]
   )
 
   const handleEndHolding = useCallback(() => {
@@ -194,17 +176,17 @@ export const useGrid = ({ width, height, minZoom, maxZoom, disabled, onFastClick
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
       if (e.button === 0) {
-        handleStartHolding({ x: e.clientX - pan.x, y: e.clientY - pan.y })
+        handleStartHolding({ x: e.clientX - x.get(), y: e.clientY - y.get() })
       }
     },
-    [handleStartHolding, pan.x, pan.y]
+    [handleStartHolding, x, y]
   )
 
   const handleTouchStart = useCallback(
     (e: React.TouchEvent) => {
-      handleStartHolding({ x: e.touches[0].clientX - pan.x, y: e.touches[0].clientY - pan.y })
+      handleStartHolding({ x: e.touches[0].clientX - x.get(), y: e.touches[0].clientY - y.get() })
     },
-    [handleStartHolding, pan.x, pan.y]
+    [handleStartHolding, x, y]
   )
 
   const handleMouseMove = useCallback(
@@ -235,21 +217,24 @@ export const useGrid = ({ width, height, minZoom, maxZoom, disabled, onFastClick
     handleEndHolding()
   }, [handleEndHolding])
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      dispatchPan({ type: 'move', y: 10 })
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      dispatchPan({ type: 'move', y: -10 })
-    } else if (e.key === 'ArrowLeft') {
-      e.preventDefault()
-      dispatchPan({ type: 'move', x: 10 })
-    } else if (e.key === 'ArrowRight') {
-      e.preventDefault()
-      dispatchPan({ type: 'move', x: -10 })
-    }
-  }, [])
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        movePan({ y: 10 })
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        movePan({ y: -10 })
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        movePan({ x: 10 })
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        movePan({ x: -10 })
+      }
+    },
+    [movePan]
+  )
 
   const resetZoom = () => {
     setZoom(1)
@@ -258,7 +243,9 @@ export const useGrid = ({ width, height, minZoom, maxZoom, disabled, onFastClick
 
   return {
     zoom,
-    pan,
+    zoomDisplayValue: zoomDisplayValueDeferred,
+    x,
+    y,
     containerRef,
     handleWheel,
     handleMouseDown,

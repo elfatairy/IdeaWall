@@ -117,13 +117,16 @@ export default function Whiteboard() {
           disabled={!profile}
           width={GRID_WIDTH}
           height={GRID_HEIGHT}
-          gridSize={GRID_CELL_SIZE}
+          gridCellSize={GRID_CELL_SIZE}
           minZoom={MIN_ZOOM}
           maxZoom={MAX_ZOOM}
-          onHoldClick={({ x, y }) => setColorPalettePosition({ x, y })}
+          onHoldClick={({ x, y }) => { setColorPalettePosition({ x, y }) }}
           onFastClick={() => setColorPalettePosition(null)}
         >
           <GridContent>
+            {/* <GridItem x={0} y={0}>
+              <StickyNote color='red' content='Hello' />
+            </GridItem> */}
             <AnimatePresence>
               {colorPalettePosition && (
                 <GridItem x={colorPalettePosition.x} y={colorPalettePosition.y} disableScale>

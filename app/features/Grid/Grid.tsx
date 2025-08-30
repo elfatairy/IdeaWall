@@ -1,8 +1,9 @@
 import { Slider } from '~/components/ui/slider'
 import { useGrid } from './useGrid'
 import type React from 'react'
-import { createContext, use, useCallback, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react'
+import { createContext, Fragment, use, useCallback, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { cn } from '~/lib/utils'
+import { motion, MotionValue, useTransform } from 'motion/react'
 
 export interface GridRef {
   focusGrid: () => void
@@ -12,7 +13,7 @@ interface GridProps {
   children?: React.ReactNode
   width?: number
   height?: number
-  gridSize?: number
+  gridCellSize?: number
   minZoom?: number
   maxZoom?: number
   ref?: React.RefObject<GridRef | null>
@@ -22,20 +23,18 @@ interface GridProps {
 }
 
 const GridContext = createContext<{
-  width: number
-  height: number
-  pan: {
-    x: number
-    y: number
-  }
-  zoom: number
+  width: MotionValue<number>
+  height: MotionValue<number>
+  x: MotionValue<number>
+  y: MotionValue<number>
+  zoom: MotionValue<number>
 } | null>(null)
 
 export default function Grid({
   children = null,
   width = window.innerWidth * 10,
   height = window.innerHeight * 10,
-  gridSize = 20,
+  gridCellSize = 20,
   minZoom = .1,
   maxZoom = 1,
   ref = undefined,
@@ -43,15 +42,30 @@ export default function Grid({
   onFastClick = undefined,
   onHoldClick = undefined
 }: GridProps) {
-  const { zoom, pan, containerRef, handleWheel, handleMouseDown, handleMouseMove, handleMouseUp, handleZoom, handleKeyDown, handleTouchStart, handleTouchMove, handleTouchEnd } = useGrid({
+  const {
+    zoomDisplayValue,
+    x,
+    y,
+    containerRef,
+    zoom,
+    handleWheel,
+    handleMouseDown,
+    handleMouseMove,
+    handleMouseUp,
+    handleZoom,
+    handleKeyDown,
+    handleTouchStart,
+    handleTouchMove,
+    handleTouchEnd
+  } = useGrid({
     width,
     height,
     minZoom,
     maxZoom,
+    gridCellSize: gridCellSize,
     onFastClick,
     onHoldClick
   })
-  const scaledGridSize = gridSize * zoom
 
   useImperativeHandle(ref, () => ({
     focusGrid: () => {
@@ -59,78 +73,101 @@ export default function Grid({
     }
   }))
 
+  const scaledWidth = useTransform(zoom, (zoom) => width * zoom)
+
+  const gridLevels = useMemo(() => Math.ceil(Math.log10(width / gridCellSize)), [width, gridCellSize])
+
   return (
     <div className='relative h-full w-full'>
       {/* Zoom Controls */}
       <div className='absolute bottom-4 right-4 z-10 flex flex-row gap-2 items-center rounded-lg bg-white p-2 shadow-lg'>
-        <Slider min={minZoom} max={maxZoom} value={[zoom]} step={0.1} onValueChange={(values) => handleZoom(values[0])} className='w-40' aria-label='Zoom level slider' />
-        <div className='text-center text-xs font-bold text-gray-600'>x{zoom.toFixed(2)}</div>
+        <Slider min={minZoom} max={maxZoom} value={[zoomDisplayValue]} step={0.1} onValueChange={(values) => handleZoom(values[0])} className='w-40' aria-label='Zoom level slider' />
+        <motion.span className='text-center text-xs font-bold text-gray-600'>x{zoomDisplayValue.toFixed(2)}</motion.span>
       </div>
       {/* Grid Container */}
       <div
         ref={containerRef}
         className={cn('relative h-full w-full', !disabled && 'cursor-grab active:cursor-grabbing')}
         tabIndex={0}
-        onWheel={disabled ? undefined : handleWheel}
-        onMouseDown={disabled ? undefined : handleMouseDown}
-        onMouseMove={disabled ? undefined : handleMouseMove}
-        onMouseUp={disabled ? undefined : handleMouseUp}
-        onMouseLeave={disabled ? undefined : handleMouseUp}
-        onKeyDown={disabled ? undefined : handleKeyDown}
-        onTouchStart={disabled ? undefined : handleTouchStart}
-        onTouchMove={disabled ? undefined : handleTouchMove}
-        onTouchEnd={disabled ? undefined : handleTouchEnd}
-        onTouchCancel={disabled ? undefined : handleTouchEnd}
       >
-        <svg
-          width={width * zoom}
-          height={height * zoom}
+        <motion.div
           style={{
-            transform: `translate(${pan.x}px, ${pan.y}px)`
+            width: scaledWidth,
+            height: scaledWidth,
+            x,
+            y
           }}
+          animate={{
+            transition: { duration: 0.01 }
+          }}
+          onWheel={disabled ? undefined : handleWheel}
+          onMouseDown={disabled ? undefined : handleMouseDown}
+          onMouseMove={disabled ? undefined : handleMouseMove}
+          onMouseUp={disabled ? undefined : handleMouseUp}
+          onMouseLeave={disabled ? undefined : handleMouseUp}
+          onKeyDown={disabled ? undefined : handleKeyDown}
+          onTouchStart={disabled ? undefined : handleTouchStart}
+          onTouchMove={disabled ? undefined : handleTouchMove}
+          onTouchEnd={disabled ? undefined : handleTouchEnd}
+          onTouchCancel={disabled ? undefined : handleTouchEnd}
         >
-          <defs>
-            <pattern id='grid-1' width={scaledGridSize} height={scaledGridSize} patternUnits='userSpaceOnUse'>
-              <path
-                d={`M ${scaledGridSize} 0 L 0 0 0 ${scaledGridSize}`}
-                fill='none'
-                stroke='var(--color-gray-400)'
-                strokeWidth={1 * zoom}
-                opacity={0.5}
-              />
-            </pattern>
-            <pattern id='grid-2' width={scaledGridSize * 10} height={scaledGridSize * 10} patternUnits='userSpaceOnUse'>
-              <path
-                d={`M ${scaledGridSize * 10} 0 L 0 0 0 ${scaledGridSize * 10}`}
-                fill='none'
-                stroke='var(--color-gray-400)'
-                strokeWidth={1}
-                opacity={0.5}
-              />
-            </pattern>
-            <pattern id='grid-3' width={scaledGridSize * 100} height={scaledGridSize * 100} patternUnits='userSpaceOnUse'>
-              <path
-                d={`M ${scaledGridSize * 100} 0 L 0 0 0 ${scaledGridSize * 100}`}
-                fill='none'
-                stroke='var(--color-gray-400)'
-                strokeWidth={1}
-                opacity={0.5}
-              />
-            </pattern>
-          </defs>
-          <rect width='100%' height='100%' fill='url(#grid-1)' />
-          <rect width='100%' height='100%' fill='url(#grid-2)' />
-          <rect width='100%' height='100%' fill='url(#grid-3)' />
-        </svg>
-        {
-          children && (
-            <GridContext value={{ width: width * zoom, height: height * zoom, pan, zoom }}>
-              {children}
-            </GridContext>
-          )
-        }
+          <svg className='w-full h-full'>
+            <defs>
+              {
+                Array.from({ length: gridLevels }).map((_, index) => {
+                  return (
+                    <Fragment key={index}>
+                      <GridCell zoom={zoom} cellSize={gridCellSize} index={index} />
+                    </Fragment>
+                  )
+                }
+                )
+              }
+            </defs>
+            {
+              Array.from({ length: gridLevels }).map((_, index) => {
+                return (
+                  <rect key={index} width='100%' height='100%' fill={`url(#grid-${index})`} />
+                )
+              })
+            }
+          </svg>
+          {
+            children && (
+              <GridContext value={{ width: scaledWidth, height: scaledWidth, x, y, zoom }}>
+                {children}
+              </GridContext>
+            )
+          }
+        </motion.div>
       </div>
+
     </div>
+  )
+}
+
+const GridCell = ({ zoom, cellSize, index }: { zoom: MotionValue<number>, cellSize: number, index: number }) => {
+  const scaledCellSize = useTransform(zoom, (_zoom) => cellSize * (10 ** index) * _zoom)
+  const scaledStrokeWidth = useTransform(zoom, [0.1 ** index, 0.1 ** (index + 1)], [1, 0.1])
+
+  return (
+    <motion.pattern
+      key={index}
+      id={`grid-${index}`}
+      style={{
+        width: scaledCellSize,
+        height: scaledCellSize
+      }}
+      patternUnits='userSpaceOnUse'
+    >
+      <motion.path
+        d={`M ${cellSize * 10 ** index} 0 L 0 0 0 ${cellSize * 10 ** index}`}
+        fill='none'
+        stroke='var(--color-gray-400)'
+        strokeWidth={scaledStrokeWidth}
+        opacity={0.5}
+      />
+    </motion.pattern>
   )
 }
 
@@ -142,45 +179,9 @@ const useGridContentContext = () => {
   return context
 }
 
-export const GridContent = ({ children, onHoldClick }: { children: React.ReactNode, onHoldClick?: () => void }) => {
-  const { width, height, pan } = useGridContentContext()
-  const isHoldingRef = useRef(false)
-
-  const handleHoldClick = useCallback((e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault()
-    if (isHoldingRef.current) {
-      return
-    }
-
-    isHoldingRef.current = true
-
-    if (onHoldClick) {
-      setTimeout(() => {
-        if (!isHoldingRef.current) {
-          return
-        }
-        onHoldClick()
-      }, 500)
-    }
-  }, [onHoldClick])
-
-  const handleUp = useCallback(() => {
-    isHoldingRef.current = false
-  }, [])
-
+export const GridContent = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div
-      className='absolute top-0 left-0'
-      style={{
-        width: width,
-        height: height,
-        transform: `translate(${pan.x}px, ${pan.y}px)`
-      }}
-      onMouseDown={handleHoldClick}
-      onTouchStart={handleHoldClick}
-      onMouseUp={handleUp}
-      onTouchEnd={handleUp}
-    >
+    <div className='absolute inset-0'>
       {children}
     </div>
   )
@@ -197,17 +198,20 @@ export const GridItem = ({ children, x, y, disableScale = false }: { children: R
     }
   }, [])
 
+  const translateX = useTransform(width, (_width) => _width / 2 + x - itemSize.width / 2)
+  const translateY = useTransform(height, (_height) => _height / 2 + y - itemSize.height / 2)
+
   return (
-    <div
+    <motion.div
       ref={itemRef}
-      className='absolute z-10'
+      className='absolute z-10 '
       style={{
-        top: height / 2,
-        left: width / 2,
-        transform: `translate(${-itemSize.width / 2 + x * zoom}px, ${-itemSize.height / 2 + y * zoom}px) ${disableScale ? '' : `scale(${zoom})`}`
+        x: translateX,
+        y: translateY,
+        scale: disableScale ? 1 : zoom
       }}
     >
       {children}
-    </div>
+    </motion.div>
   )
 }
