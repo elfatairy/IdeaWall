@@ -14,8 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover
 import { PencilIcon } from 'lucide-react'
 import { EditProfileDialog } from '~/features/EditProfile/EditProfile'
 import { ColorPalette } from '~/components/ColorPalette'
-import { AnimatePresence, motion } from 'motion/react'
-import { useCreateStickyNote } from '~/features/InteractiveStickyNotes/useCreateStickyNote'
+import { AnimatePresence } from 'motion/react'
 import { useStickyNotes } from '~/features/InteractiveStickyNotes/useStickyNotes'
 import { StickyNotes } from '~/features/InteractiveStickyNotes/StickyNotes'
 
@@ -97,19 +96,21 @@ export default function Whiteboard() {
     gridRef.current?.focusGrid()
   }
 
-  const handleColorPaletteClick = async (color: string) => {
+  const handleColorPaletteClick = (color: string) => {
     setColorPalettePosition(null)
-    const result = await createStickyNote({ content: '', color, position: colorPalettePosition! })
-    if (!result.success) {
-      toast.error('Failed to create sticky note')
-    }
+    createStickyNote({ content: '', color, position: colorPalettePosition! }, {
+      onError: () => {
+        toast.error('Failed to create sticky note')
+      }
+    })
   }
 
-  const handleDeleteStickyNote = async (id: string) => {
-    const result = await deleteStickyNote(id)
-    if (!result.success) {
-      toast.error('Failed to delete sticky note')
-    }
+  const handleDeleteStickyNote = (id: string) => {
+    deleteStickyNote(id, {
+      onError: () => {
+        toast.error('Failed to delete sticky note')
+      }
+    })
   }
 
   return (
@@ -139,7 +140,7 @@ export default function Whiteboard() {
         >
           <GridContent>
             <StickyNotes
-              stickyNotes={stickyNotes}
+              stickyNotes={stickyNotes || []}
               onDeleteStickyNote={handleDeleteStickyNote}
               render={(position, renderStickyNote) => (
                 <GridItem x={position.x} y={position.y}>

@@ -13,6 +13,7 @@ import { Toaster } from 'sonner'
 import type { Route } from './+types/root'
 import './app.css'
 import { ProfileProvider } from './contexts/ProfileContext'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 export function Layout({ children }: { children: ReactNode }) {
   return (
@@ -33,11 +34,15 @@ export function Layout({ children }: { children: ReactNode }) {
   )
 }
 
+const queryClient = new QueryClient()
+
 function Providers({ children }: { children: ReactNode }) {
   return (
-    <ProfileProvider>
-      {children}
-    </ProfileProvider>
+    <QueryClientProvider client={queryClient}>
+      <ProfileProvider>
+        {children}
+      </ProfileProvider>
+    </QueryClientProvider>
   )
 }
 

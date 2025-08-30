@@ -10,20 +10,22 @@ import { toast } from 'sonner'
 import { randomizeNameHelper } from '~/lib/utils'
 
 export function CreateProfileDialog({ open }: { open: boolean }) {
-  const { call: createProfile, isLoading: isCreatingProfile } = useCreateProfile()
+  const { mutate: createProfile, isPending: isCreatingProfile } = useCreateProfile()
   const [sex, setSex] = useState<'man' | 'woman'>()
 
   const handleBack = () => {
     setSex(undefined)
   }
 
-  const handleSubmit = async (name: string, avatar: AvatarFullConfig) => {
-    const result = await createProfile({ name, avatar })
-    if (result.success) {
-      toast.success('Profile created successfully')
-    } else {
-      toast.error('Failed to create profile')
-    }
+  const handleSubmit = (name: string, avatar: AvatarFullConfig) => {
+    createProfile({ name, avatar }, {
+      onSuccess: () => {
+        toast.success('Profile created successfully')
+      },
+      onError: () => {
+        toast.error('Failed to create profile')
+      }
+    })
   }
 
   const renderDialogContent = () => {

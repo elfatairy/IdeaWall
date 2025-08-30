@@ -2,7 +2,7 @@ import type { AvatarFullConfig } from 'react-nice-avatar'
 import { useProfile } from '~/contexts/ProfileContext'
 import { supabase } from '~/supabase'
 import type { Json } from '~/types/supabase'
-import { useApi } from '~/hooks/useApi'
+import { useMutation } from '@tanstack/react-query'
 
 const createProfile = async (params: { name: string; avatar: AvatarFullConfig }) => {
   const { name, avatar } = params
@@ -37,8 +37,8 @@ const createProfile = async (params: { name: string; avatar: AvatarFullConfig })
 
 export const useCreateProfile = () => {
   const { setProfile } = useProfile()
-  return useApi({
-    apiFunction: createProfile,
+  return useMutation({
+    mutationFn: createProfile,
     onSuccess: (data) => {
       setProfile(data)
     }
