@@ -13,11 +13,11 @@ import { CreateProfileDialog } from '~/features/CreateProfile/CreateProfile'
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover'
 import { PencilIcon } from 'lucide-react'
 import { EditProfileDialog } from '~/features/EditProfile/EditProfile'
-import { StickyNote } from '~/components/StickyNote'
-import { getRandomColor } from '~/lib/stickynotes'
 import { ColorPalette } from '~/components/ColorPalette'
 import { AnimatePresence, motion } from 'motion/react'
 import { useCreateStickyNote } from '~/hooks/useCreateStickyNote'
+import { useStickyNotes } from '~/features/InteractiveStickyNotes/useStickyNotes'
+import { StickyNotes } from '~/features/InteractiveStickyNotes/StickyNotes'
 
 export function meta({ }: Route.MetaArgs) {
   return [
@@ -91,17 +91,16 @@ export default function Whiteboard() {
   const { profile } = useProfile()
   const gridRef = useRef<GridRef>(null)
   const [colorPalettePosition, setColorPalettePosition] = useState<{ x: number, y: number } | null>(null)
-  const { call: createStickyNote } = useCreateStickyNote()
+  const { stickyNotes, createStickyNote } = useStickyNotes()
 
   const handleSkipToWhiteboard = () => {
     gridRef.current?.focusGrid()
   }
 
   const handleColorPaletteClick = async (color: string) => {
+    setColorPalettePosition(null)
     const result = await createStickyNote({ content: '', color, position: colorPalettePosition! })
-    if (result.success) {
-      setColorPalettePosition(null)
-    } else {
+    if (!result.success) {
       toast.error('Failed to create sticky note')
     }
   }
@@ -132,9 +131,14 @@ export default function Whiteboard() {
           onFastClick={() => setColorPalettePosition(null)}
         >
           <GridContent>
-            {/* <GridItem x={0} y={0}>
-              <StickyNote color='red' content='Hello' />
-            </GridItem> */}
+            <StickyNotes
+              stickyNotes={stickyNotes}
+              render={(position, renderStickyNote) => (
+                <GridItem x={position.x} y={position.y}>
+                  {renderStickyNote()}
+                </GridItem>
+              )}
+            />
             <AnimatePresence>
               {colorPalettePosition && (
                 <GridItem x={colorPalettePosition.x} y={colorPalettePosition.y} disableScale>
