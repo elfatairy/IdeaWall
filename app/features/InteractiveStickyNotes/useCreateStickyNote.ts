@@ -15,7 +15,7 @@ const createStickyNote = async (params: {
   const { data, error } = await supabase
     .from('sticky_notes')
     .insert({ id, content, color, position, user_id: userId })
-    .select()
+    .select('*, user:users(*)')
     .single()
   if (!data) {
     throw new Error('Failed to create sticky note')
@@ -46,7 +46,8 @@ export const useCreateStickyNote = (channel: ReturnType<typeof supabase.channel>
         ...params,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        user_id: profile.id
+        user_id: profile.id,
+        user: profile
       }
 
       const previousStickyNotes = queryClient.getQueryData(['sticky_notes'])

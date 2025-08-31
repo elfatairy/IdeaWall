@@ -16,7 +16,7 @@ import { EditProfileDialog } from '~/features/EditProfile/EditProfile'
 import { ColorPalette } from '~/components/ColorPalette'
 import { AnimatePresence } from 'motion/react'
 import { useStickyNotes } from '~/features/InteractiveStickyNotes/useStickyNotes'
-import { StickyNotes, StickyNotesWithChannel } from '~/features/InteractiveStickyNotes/StickyNotes'
+import { StickyNotesWithChannel } from '~/features/InteractiveStickyNotes/StickyNotes'
 
 export function meta({ }: Route.MetaArgs) {
   return [
@@ -64,24 +64,6 @@ const activeUsers = [
     id: 6,
     name: faker.person.fullName(),
     color: 'blue',
-    config: genConfig()
-  },
-  {
-    id: 7,
-    name: faker.person.fullName(),
-    color: 'red',
-    config: genConfig()
-  },
-  {
-    id: 8,
-    name: faker.person.fullName(),
-    color: 'blue',
-    config: genConfig()
-  },
-  {
-    id: 9,
-    name: faker.person.fullName(),
-    color: 'red',
     config: genConfig()
   }
 ]

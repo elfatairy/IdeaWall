@@ -5,7 +5,12 @@ import { useChannel } from './StickyNotes'
 
 const updateStickyNoteContent = async (params: { id: string; content: string }) => {
   const { id, content } = params
-  const { data, error } = await supabase.from('sticky_notes').update({ content }).eq('id', id).select().single()
+  const { data, error } = await supabase
+    .from('sticky_notes')
+    .update({ content })
+    .eq('id', id)
+    .select('*, user:users(*)')
+    .single()
   if (error) {
     throw error
   }

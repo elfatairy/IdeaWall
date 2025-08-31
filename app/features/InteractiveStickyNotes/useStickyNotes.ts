@@ -10,13 +10,22 @@ import {
 } from './stickyNotesEvents'
 import { useBroadcastChannel } from '~/hooks/useBroadcastChannel'
 import { useMemo } from 'react'
+import type { AvatarConfig } from 'react-nice-avatar'
+import type { Position } from '~/types/general'
 
 const getStickyNotes = async () => {
-  const { data, error } = await supabase.from('sticky_notes').select('*')
+  const { data, error } = await supabase.from('sticky_notes').select('*, user:users(*)')
   if (error) {
     throw error
   }
-  return data
+  return data.map((stickyNote) => ({
+    ...stickyNote,
+    user: {
+      ...stickyNote.user,
+      position: stickyNote.user.position as Position,
+      avatarConfig: stickyNote.user.avatarConfig as AvatarConfig
+    }
+  }))
 }
 
 export const useStickyNotes = () => {
@@ -49,7 +58,7 @@ export const useStickyNotes = () => {
     [queryClient]
   )
   const { channel, isConnected } = useBroadcastChannel('sticky-notes', handlers)
-  const { data: stickyNotes } = useQuery<StickyNote[]>({
+  const { data: stickyNotes } = useQuery({
     queryFn: getStickyNotes,
     queryKey: ['sticky_notes']
   })
