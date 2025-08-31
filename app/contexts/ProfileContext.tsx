@@ -20,17 +20,7 @@ type ProfileContextType = {
 export const ProfileContext = createContext<ProfileContextType>({ profile: null, setProfile: async () => { } })
 
 export const ProfileProvider = ({ children }: { children: React.ReactNode }) => {
-  const [profile, setProfile] = useState<User | null>(null)
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      const savedProfile = localStorage.getItem('profile')
-      if (savedProfile) {
-        setProfile(JSON.parse(savedProfile))
-      }
-    }
-    fetchUser()
-  }, [])
+  const [profile, setProfile] = useState<User | null>(JSON.parse(localStorage.getItem('profile') || 'null'))
 
   const updateProfile = async (newProfile: User) => {
     setProfile(newProfile)

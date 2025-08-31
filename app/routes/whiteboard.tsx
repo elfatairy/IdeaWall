@@ -1,13 +1,12 @@
 import Grid, { GridContent, GridItem, type GridRef } from '~/features/Grid/Grid'
 import type { Route } from './+types/whiteboard'
 import { GRID_CELL_SIZE, GRID_HEIGHT, GRID_WIDTH, MAX_ZOOM, MIN_ZOOM } from '~/constants/grid'
-import Avatar, { genConfig } from 'react-nice-avatar'
+import Avatar from 'react-nice-avatar'
 import { Button } from '~/components/ui/button'
 import { toast } from 'sonner'
 import ShareIcon from '~/assets/icons/share.svg'
 import { useId, useRef, useState } from 'react'
-import { faker } from '@faker-js/faker'
-import { useProfile } from '~/contexts/ProfileContext'
+import { useProfile, type User } from '~/contexts/ProfileContext'
 import { cn } from '~/lib/utils'
 import { CreateProfileDialog } from '~/features/CreateProfile/CreateProfile'
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover'
@@ -17,6 +16,8 @@ import { ColorPalette } from '~/components/ColorPalette'
 import { AnimatePresence } from 'motion/react'
 import { useStickyNotes } from '~/features/InteractiveStickyNotes/useStickyNotes'
 import { StickyNotesWithChannel } from '~/features/InteractiveStickyNotes/StickyNotes'
+import { useOnlineUsers } from '~/contexts/OnlineUsers'
+import { useSendHeartbeat } from '~/hooks/useNotifyOnline'
 
 export function meta({ }: Route.MetaArgs) {
   return [
@@ -29,46 +30,8 @@ export function meta({ }: Route.MetaArgs) {
   ]
 }
 
-const activeUsers = [
-  {
-    id: 1,
-    name: faker.person.fullName(),
-    color: 'red',
-    config: genConfig()
-  },
-  {
-    id: 2,
-    name: faker.person.fullName(),
-    color: 'blue',
-    config: genConfig()
-  },
-  {
-    id: 3,
-    name: faker.person.fullName(),
-    color: 'red',
-    config: genConfig()
-  },
-  {
-    id: 4,
-    name: faker.person.fullName(),
-    color: 'blue',
-    config: genConfig()
-  },
-  {
-    id: 5,
-    name: faker.person.fullName(),
-    color: 'red',
-    config: genConfig()
-  },
-  {
-    id: 6,
-    name: faker.person.fullName(),
-    color: 'blue',
-    config: genConfig()
-  }
-]
-
 export default function Whiteboard() {
+  useSendHeartbeat()
   const { profile } = useProfile()
   const gridRef = useRef<GridRef>(null)
   const [colorPalettePosition, setColorPalettePosition] = useState<{ x: number, y: number } | null>(null)
@@ -150,18 +113,20 @@ export default function Whiteboard() {
 }
 
 function HeaderActions() {
+  const { onlineUsers } = useOnlineUsers()
+
   const renderOnlineUsers = () => {
     return (
-      <div className='flex-row hidden sm:flex'>
+      <div className='flex-row hidden sm:flex [&>div:last-child]:mr-3'>
         {
-          activeUsers.slice(0, 4).map((user) => <UserAvatarCircle key={user.id} user={user} />)
+          onlineUsers.slice(0, 4).map((user) => <UserAvatarCircle key={user.id} user={user} />)
         }
         {
-          activeUsers.length > 4 && (
-            <div className='z-100'>
+          onlineUsers.length > 4 && (
+            <div className='w-6 z-100'>
               <div className='bg-white rounded-full p-1 w-10 h-10 flex items-center justify-center'>
                 <div className='w-full h-full bg-gray-200 rounded-full flex items-center justify-center text-xs font-bold'>
-                  +{activeUsers.length - 4}
+                  +{onlineUsers.length - 4}
                 </div>
               </div>
             </div>
@@ -192,13 +157,13 @@ function HeaderActions() {
   )
 }
 
-const UserAvatarCircle = ({ user }: { user: typeof activeUsers[number] }) => {
+const UserAvatarCircle = ({ user }: { user: User }) => {
   const labelId = useId()
 
   return (
     <div className='group w-6 z-100' key={user.id}>
       <div className='relative bg-white rounded-full p-1 w-10 h-10 focus:bg-gray-300 focus:outline-none' aria-describedby={labelId} tabIndex={0}>
-        <Avatar className='w-full h-full' {...user.config} />
+        <Avatar className='w-full h-full' {...user.avatarConfig} />
         <div id={labelId} className='absolute top-[100%] left-1/2 -translate-x-1/2 text-xs font-bold whitespace-nowrap bg-gray-200 rounded-full p-1 px-2 flex items-center justify-center opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300'>
           {user.name}
         </div>
