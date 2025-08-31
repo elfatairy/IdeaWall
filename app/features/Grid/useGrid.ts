@@ -3,8 +3,6 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, use
 import { throttle } from '../../lib/utils'
 import { useMotionValue } from 'motion/react'
 import { THROTTLE_TIME } from '~/constants/grid'
-import { useUpdateUserPosition } from '~/hooks/useUpdateUserPosition'
-import { useProfile } from '~/contexts/ProfileContext'
 import { toast } from 'sonner'
 
 interface Props {
@@ -14,11 +12,12 @@ interface Props {
   maxZoom: number
   gridCellSize: number
   disabled?: boolean
+  onMouseMove?: ({ x, y }: { x: number; y: number }) => void
   onFastClick?: ({ x, y }: { x: number; y: number }) => void
   onHoldClick?: ({ x, y }: { x: number; y: number }) => void
 }
 
-export const useGrid = ({ width, height, minZoom, maxZoom, disabled, onFastClick, onHoldClick }: Props) => {
+export const useGrid = ({ width, height, minZoom, maxZoom, onFastClick, onHoldClick, onMouseMove }: Props) => {
   const x = useMotionValue(0)
   const y = useMotionValue(0)
   const zoom = useMotionValue(1)
@@ -30,8 +29,6 @@ export const useGrid = ({ width, height, minZoom, maxZoom, disabled, onFastClick
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   const holdingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const fastClickTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const { profile } = useProfile()
-  const { mutate: updateUserPosition } = useUpdateUserPosition()
 
   const getViewPort = useCallback(() => {
     const rect = containerRef.current?.getBoundingClientRect()
@@ -162,23 +159,6 @@ export const useGrid = ({ width, height, minZoom, maxZoom, disabled, onFastClick
     [onHoldClick, onFastClick, width, zoom, height]
   )
 
-  const throttledUpdateUserPosition = useMemo(() => {
-    return throttle((position: { x: number; y: number }) => {
-      if (!profile?.id) {
-        return
-      }
-      const viewPort = getViewPort()
-      if (!viewPort) {
-        return
-      }
-      const pos = {
-        x: position.x / zoom.get(),
-        y: position.y / zoom.get()
-      }
-      updateUserPosition({ position: pos })
-    }, THROTTLE_TIME)
-  }, [updateUserPosition, profile?.id, zoom, getViewPort])
-
   const handleMoving = useCallback(
     (position: { x: number; y: number }) => {
       if (isHolding) {
@@ -188,18 +168,23 @@ export const useGrid = ({ width, height, minZoom, maxZoom, disabled, onFastClick
         if (fastClickTimeoutRef.current) {
           clearTimeout(fastClickTimeoutRef.current)
         }
-        setPan(position)
+        setPan({
+          x: position.x - dragStart.x,
+          y: position.y - dragStart.y
+        })
       }
       const viewPort = getViewPort()
       if (!viewPort) {
         return
       }
-      throttledUpdateUserPosition({
-        x: position.x - viewPort.width / 2,
-        y: position.y - viewPort.height / 2
-      })
+      if (onMouseMove) {
+        onMouseMove({
+          x: (position.x - viewPort.width / 2) / zoom.get(),
+          y: (position.y - viewPort.height / 2) / zoom.get()
+        })
+      }
     },
-    [isHolding, setPan, throttledUpdateUserPosition, getViewPort]
+    [isHolding, getViewPort, onMouseMove, setPan, dragStart.x, dragStart.y, zoom]
   )
 
   const handleEndHolding = useCallback(() => {
@@ -232,11 +217,11 @@ export const useGrid = ({ width, height, minZoom, maxZoom, disabled, onFastClick
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
       handleMoving({
-        x: e.clientX - dragStart.x,
-        y: e.clientY - dragStart.y
+        x: e.clientX,
+        y: e.clientY
       })
     },
-    [handleMoving, dragStart.x, dragStart.y]
+    [handleMoving]
   )
 
   const handleTouchMove = useCallback(

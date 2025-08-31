@@ -1,13 +1,13 @@
 import Grid, { GridContent, GridItem, type GridRef } from '~/features/Grid/Grid'
 import type { Route } from './+types/whiteboard'
-import { GRID_CELL_SIZE, GRID_HEIGHT, GRID_WIDTH, MAX_ZOOM, MIN_ZOOM } from '~/constants/grid'
+import { GRID_CELL_SIZE, GRID_HEIGHT, GRID_WIDTH, MAX_ZOOM, MIN_ZOOM, THROTTLE_TIME } from '~/constants/grid'
 import Avatar from 'react-nice-avatar'
 import { Button } from '~/components/ui/button'
 import { toast } from 'sonner'
 import ShareIcon from '~/assets/icons/share.svg'
-import { useId, useRef, useState } from 'react'
+import { useId, useMemo, useRef, useState } from 'react'
 import { useProfile, type User } from '~/contexts/ProfileContext'
-import { cn } from '~/lib/utils'
+import { cn, throttle } from '~/lib/utils'
 import { CreateProfileDialog } from '~/features/CreateProfile/CreateProfile'
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover'
 import { PencilIcon } from 'lucide-react'
@@ -19,6 +19,7 @@ import { StickyNotes } from '~/features/InteractiveStickyNotes/StickyNotes'
 import { useOnlineUsers } from '~/contexts/OnlineUsers'
 import { useSendHeartbeat } from '~/hooks/useNotifyOnline'
 import { UsersMousePositions } from '~/features/UsersMousePositions/UsersMousePositions'
+import { useUpdateUserPosition } from '~/hooks/useUpdateUserPosition'
 
 export function meta({ }: Route.MetaArgs) {
   return [
@@ -37,6 +38,7 @@ export default function Whiteboard() {
   const gridRef = useRef<GridRef>(null)
   const [colorPalettePosition, setColorPalettePosition] = useState<{ x: number, y: number } | null>(null)
   const { stickyNotes, createStickyNote, deleteStickyNote } = useStickyNotes()
+  const { mutate: updateUserPosition } = useUpdateUserPosition()
 
   const handleSkipToWhiteboard = () => {
     gridRef.current?.focusGrid()
@@ -58,6 +60,19 @@ export default function Whiteboard() {
       }
     })
   }
+
+  const throttledUpdateUserPosition = useMemo(() => {
+    return throttle((position: { x: number; y: number }) => {
+      if (!profile?.id) {
+        return
+      }
+      const pos = {
+        x: position.x,
+        y: position.y
+      }
+      updateUserPosition({ position: pos })
+    }, THROTTLE_TIME)
+  }, [updateUserPosition, profile?.id])
 
   return (
     <>
@@ -83,6 +98,7 @@ export default function Whiteboard() {
           maxZoom={MAX_ZOOM}
           onHoldClick={({ x, y }) => { setColorPalettePosition({ x, y }) }}
           onFastClick={() => setColorPalettePosition(null)}
+          onMouseMove={throttledUpdateUserPosition}
         >
           <GridContent>
             <StickyNotes

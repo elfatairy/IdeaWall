@@ -20,6 +20,7 @@ interface GridProps {
   disabled?: boolean
   onFastClick?: ({ x, y }: { x: number; y: number }) => void
   onHoldClick?: ({ x, y }: { x: number; y: number }) => void
+  onMouseMove?: ({ x, y }: { x: number; y: number }) => void
 }
 
 const GridContext = createContext<{
@@ -40,7 +41,8 @@ export default function Grid({
   ref = undefined,
   disabled = false,
   onFastClick = undefined,
-  onHoldClick = undefined
+  onHoldClick = undefined,
+  onMouseMove = undefined
 }: GridProps) {
   const {
     zoomDisplayValue,
@@ -64,7 +66,8 @@ export default function Grid({
     maxZoom,
     gridCellSize: gridCellSize,
     onFastClick,
-    onHoldClick
+    onHoldClick,
+    onMouseMove
   })
 
   useImperativeHandle(ref, () => ({
