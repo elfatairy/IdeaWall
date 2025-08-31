@@ -1,2 +1,3 @@
 export const EVENT_STICKY_NOTES_CREATED = 'sticky_notes_created'
 export const EVENT_STICKY_NOTES_DELETED = 'sticky_notes_deleted'
+export const EVENT_STICKY_NOTES_CONTENT_UPDATED = 'sticky_notes_content_updated'

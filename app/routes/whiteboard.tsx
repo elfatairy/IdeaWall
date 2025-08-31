@@ -16,7 +16,7 @@ import { EditProfileDialog } from '~/features/EditProfile/EditProfile'
 import { ColorPalette } from '~/components/ColorPalette'
 import { AnimatePresence } from 'motion/react'
 import { useStickyNotes } from '~/features/InteractiveStickyNotes/useStickyNotes'
-import { StickyNotes } from '~/features/InteractiveStickyNotes/StickyNotes'
+import { StickyNotes, StickyNotesWithChannel } from '~/features/InteractiveStickyNotes/StickyNotes'
 
 export function meta({ }: Route.MetaArgs) {
   return [
@@ -90,7 +90,7 @@ export default function Whiteboard() {
   const { profile } = useProfile()
   const gridRef = useRef<GridRef>(null)
   const [colorPalettePosition, setColorPalettePosition] = useState<{ x: number, y: number } | null>(null)
-  const { stickyNotes, createStickyNote, deleteStickyNote } = useStickyNotes()
+  const { stickyNotes, createStickyNote, deleteStickyNote, channel } = useStickyNotes()
 
   const handleSkipToWhiteboard = () => {
     gridRef.current?.focusGrid()
@@ -123,9 +123,9 @@ export default function Whiteboard() {
       </button>
       <header className='fixed z-10 flex w-full items-center justify-between px-4 py-2 pointer-events-none'>
         <img src="/logo.svg" alt="IdeaWall" className='h-10' />
-
         <HeaderActions />
       </header>
+
       <div className='fixed h-dvh w-screen'>
         <Grid
           ref={gridRef}
@@ -139,7 +139,8 @@ export default function Whiteboard() {
           onFastClick={() => setColorPalettePosition(null)}
         >
           <GridContent>
-            <StickyNotes
+            <StickyNotesWithChannel
+              channel={channel}
               stickyNotes={stickyNotes || []}
               onDeleteStickyNote={handleDeleteStickyNote}
               render={(position, renderStickyNote) => (

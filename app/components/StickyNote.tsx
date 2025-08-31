@@ -2,7 +2,10 @@ import { getTextColor } from '~/lib/stickynotes'
 import { motion } from 'motion/react'
 import { Trash } from 'lucide-react'
 import { Button } from './ui/button'
-import { cn } from '~/lib/utils'
+import { cn, throttle } from '~/lib/utils'
+import { useMemo, useState } from 'react'
+import { supabase } from '~/supabase'
+import { useUpdateStickyNoteContent } from '~/features/InteractiveStickyNotes/useUpdateStickyNoteContent'
 
 interface Props {
   color: string
@@ -13,26 +16,58 @@ interface Props {
 }
 
 export function StickyNote({ color, content, owner, onDelete, id }: Props) {
+  const [inputContent, setInputContent] = useState(content)
+  const { mutate: updateContentMutation } = useUpdateStickyNoteContent()
+  const [isEditing, setIsEditing] = useState(false)
+
+  const updateContent = useMemo(() =>
+    throttle((newContent: string) => {
+      updateContentMutation({ id, content: newContent })
+    }, 33),
+    [id, updateContentMutation]
+  )
+
+  const handleContentChange = (newContent: string) => {
+    setInputContent(newContent)
+    updateContent(newContent)
+  }
+
   return (
     <motion.div
-      className={cn('relative w-48 min-h-36 rounded-sm shadow-md hover:shadow-lg cursor-default group', owner && 'cursor-text')}
+      className={cn('relative w-48 h-36 rounded-sm shadow-md hover:shadow-lg cursor-default group', owner && 'cursor-text')}
       style={{
         backgroundColor: color
       }}
       initial={{ opacity: 0, scale: 0, rotate: -1 }}
       animate={{
         opacity: 1,
-        scale: 1
+        scale: isEditing ? 1.05 : 1,
+        rotate: isEditing ? 0 : -1
       }}
       whileHover={{ rotate: 0, scale: 1.05 }}
       exit={{ opacity: 0, y: -20 }}
       layoutId={`sticky-note-${id}`}
     >
-      <div className='p-4 h-full flex flex-col'>
-        <p className='text-sm leading-relaxed font-sans m-0 break-words font-semibold' style={{ color: getTextColor(color) }}>
-          {content}
-        </p>
-      </div>
+      {
+        owner ? (
+          <textarea
+            className='p-4 w-full h-full text-sm leading-relaxed font-sans m-0 break-words font-semibold resize-none active:outline-none focus:outline-none'
+            style={{ color: getTextColor(color) }}
+            value={inputContent}
+            onFocus={() => {
+              setIsEditing(true)
+            }}
+            onBlur={() => {
+              setIsEditing(false)
+            }}
+            onChange={(e) => handleContentChange(e.target.value)}
+          />
+        ) : (
+          <p className='p-4 text-sm leading-relaxed font-sans m-0 break-words font-semibold' style={{ color: getTextColor(color) }}>
+            {content}
+          </p>
+        )
+      }
       {
         owner && (
           <Button
