@@ -40,13 +40,12 @@ export function StickyNote({ color, content, user, onDelete, id }: Props) {
       style={{
         backgroundColor: color
       }}
-      initial={{ opacity: 0, scale: 0, rotate: -1 }}
+      initial={{ opacity: 0, scale: 0 }}
       animate={{
         opacity: 1,
-        scale: isEditing ? 1.05 : 1,
-        rotate: isEditing ? 0 : -1
+        scale: isEditing ? 1.05 : 1
       }}
-      whileHover={{ rotate: 0, scale: 1.05 }}
+      whileHover={{ scale: 1.05 }}
       exit={{ opacity: 0, y: -20 }}
       layoutId={`sticky-note-${id}`}
     >
