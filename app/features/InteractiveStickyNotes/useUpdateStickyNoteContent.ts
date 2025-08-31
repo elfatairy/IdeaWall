@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
 import { supabase } from '~/supabase'
-import { EVENT_STICKY_NOTES_CONTENT_UPDATED } from './stickyNotesEvents'
-import { useChannel } from './StickyNotes'
+import { EVENT_STICKY_NOTES_CONTENT_UPDATED } from '~/types/events'
+import { useBroadcastChannel } from '~/hooks/useBroadcastChannel'
 
 const updateStickyNoteContent = async (params: { id: string; content: string }) => {
   const { id, content } = params
@@ -18,7 +18,7 @@ const updateStickyNoteContent = async (params: { id: string; content: string }) 
 }
 
 export const useUpdateStickyNoteContent = () => {
-  const channel = useChannel()
+  const { channel } = useBroadcastChannel('sticky-notes')
 
   return useMutation({
     mutationFn: updateStickyNoteContent,

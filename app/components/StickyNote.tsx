@@ -8,6 +8,7 @@ import { useUpdateStickyNoteContent } from '~/features/InteractiveStickyNotes/us
 import type { StickyNote } from '~/types/stickynote'
 import { useProfile, type User } from '~/contexts/ProfileContext'
 import Avatar from 'react-nice-avatar'
+import { THROTTLE_TIME } from '~/constants/grid'
 
 type Props = StickyNote & {
   user: User
@@ -18,12 +19,13 @@ export function StickyNote({ color, content, user, onDelete, id }: Props) {
   const [inputContent, setInputContent] = useState(content)
   const { mutate: updateContentMutation } = useUpdateStickyNoteContent()
   const [isEditing, setIsEditing] = useState(false)
+  const [isHovering, setIsHovering] = useState(false)
   const { profile } = useProfile()
 
   const updateContent = useMemo(() =>
     throttle((newContent: string) => {
       updateContentMutation({ id, content: newContent })
-    }, 33),
+    }, THROTTLE_TIME),
     [id, updateContentMutation]
   )
 
@@ -43,7 +45,13 @@ export function StickyNote({ color, content, user, onDelete, id }: Props) {
       initial={{ opacity: 0, scale: 0 }}
       animate={{
         opacity: 1,
-        scale: isEditing ? 1.05 : 1
+        scale: isEditing || isHovering ? 1.05 : 1
+      }}
+      onMouseEnter={() => {
+        setIsHovering(true)
+      }}
+      onMouseLeave={() => {
+        setIsHovering(false)
       }}
       whileHover={{ scale: 1.05 }}
       exit={{ opacity: 0, y: -20 }}

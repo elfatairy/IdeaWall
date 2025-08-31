@@ -15,9 +15,10 @@ import { EditProfileDialog } from '~/features/EditProfile/EditProfile'
 import { ColorPalette } from '~/components/ColorPalette'
 import { AnimatePresence } from 'motion/react'
 import { useStickyNotes } from '~/features/InteractiveStickyNotes/useStickyNotes'
-import { StickyNotesWithChannel } from '~/features/InteractiveStickyNotes/StickyNotes'
+import { StickyNotes } from '~/features/InteractiveStickyNotes/StickyNotes'
 import { useOnlineUsers } from '~/contexts/OnlineUsers'
 import { useSendHeartbeat } from '~/hooks/useNotifyOnline'
+import { UsersMousePositions } from '~/features/UsersMousePositions/UsersMousePositions'
 
 export function meta({ }: Route.MetaArgs) {
   return [
@@ -35,7 +36,7 @@ export default function Whiteboard() {
   const { profile } = useProfile()
   const gridRef = useRef<GridRef>(null)
   const [colorPalettePosition, setColorPalettePosition] = useState<{ x: number, y: number } | null>(null)
-  const { stickyNotes, createStickyNote, deleteStickyNote, channel } = useStickyNotes()
+  const { stickyNotes, createStickyNote, deleteStickyNote } = useStickyNotes()
 
   const handleSkipToWhiteboard = () => {
     gridRef.current?.focusGrid()
@@ -84,8 +85,7 @@ export default function Whiteboard() {
           onFastClick={() => setColorPalettePosition(null)}
         >
           <GridContent>
-            <StickyNotesWithChannel
-              channel={channel}
+            <StickyNotes
               stickyNotes={stickyNotes || []}
               onDeleteStickyNote={handleDeleteStickyNote}
               render={(position, renderStickyNote) => (
@@ -101,6 +101,12 @@ export default function Whiteboard() {
                 </GridItem>
               )}
             </AnimatePresence>
+            <UsersMousePositions render={(position, renderMouseIcon) => (
+              <GridItem x={position.x} y={position.y} disableScale>
+                {renderMouseIcon()}
+              </GridItem>
+            )}
+            />
           </GridContent>
         </Grid>
       </div>

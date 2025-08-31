@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { supabase } from '~/supabase'
+import { useBroadcastChannels, type Channel } from '~/contexts/BroadcaseChannels'
 
 type Handler = {
   event: string
@@ -7,11 +7,12 @@ type Handler = {
 }
 
 export const useBroadcastChannel = (channelName: string, handlers?: Handler[]) => {
-  const [channel, setChannel] = useState<ReturnType<typeof import('~/supabase').supabase.channel> | null>(null)
+  const { getChannel } = useBroadcastChannels()
+  const [channel, setChannel] = useState<Channel | null>(null)
   const [isConnected, setIsConnected] = useState(false)
 
   useEffect(() => {
-    const _channel = supabase.channel(channelName)
+    const _channel = getChannel(channelName)
 
     handlers?.forEach((handler) => {
       _channel.on('broadcast', { event: handler.event }, handler.callback)
@@ -23,10 +24,8 @@ export const useBroadcastChannel = (channelName: string, handlers?: Handler[]) =
 
     setChannel(_channel)
 
-    return () => {
-      _channel.unsubscribe()
-    }
-  }, [channelName, handlers])
+    return () => {}
+  }, [channelName, getChannel, handlers])
 
   return { channel, isConnected }
 }

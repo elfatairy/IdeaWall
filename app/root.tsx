@@ -15,6 +15,7 @@ import './app.css'
 import { ProfileProvider } from './contexts/ProfileContext'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import OnlineUsers from './contexts/OnlineUsers'
+import { BroadcaseChannels } from './contexts/BroadcaseChannels'
 
 export function Layout({ children }: { children: ReactNode }) {
   return (
@@ -39,13 +40,15 @@ const queryClient = new QueryClient()
 
 function Providers({ children }: { children: ReactNode }) {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ProfileProvider>
-        <OnlineUsers>
-          {children}
-        </OnlineUsers>
-      </ProfileProvider>
-    </QueryClientProvider>
+    <BroadcaseChannels>
+      <QueryClientProvider client={queryClient}>
+        <ProfileProvider>
+          <OnlineUsers>
+            {children}
+          </OnlineUsers>
+        </ProfileProvider>
+      </QueryClientProvider>
+    </BroadcaseChannels>
   )
 }
 

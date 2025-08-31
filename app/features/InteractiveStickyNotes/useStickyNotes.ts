@@ -7,7 +7,7 @@ import {
   EVENT_STICKY_NOTES_CONTENT_UPDATED,
   EVENT_STICKY_NOTES_CREATED,
   EVENT_STICKY_NOTES_DELETED
-} from './stickyNotesEvents'
+} from '~/types/events'
 import { useBroadcastChannel } from '~/hooks/useBroadcastChannel'
 import { useMemo } from 'react'
 import type { AvatarConfig } from 'react-nice-avatar'
@@ -65,5 +65,5 @@ export const useStickyNotes = () => {
   const { mutate: createStickyNote } = useCreateStickyNote(channel)
   const { mutate: deleteStickyNote } = useDeleteStickyNote(channel)
 
-  return { stickyNotes, isConnected, createStickyNote, deleteStickyNote, channel }
+  return { stickyNotes, isConnected, createStickyNote, deleteStickyNote }
 }

@@ -1,0 +1,19 @@
+import { useMutation } from '@tanstack/react-query'
+import { EVENT_USER_POSITION_UPDATED } from '~/types/events'
+import { useBroadcastChannel } from './useBroadcastChannel'
+import { useProfile } from '~/contexts/ProfileContext'
+
+export const useUpdateUserPosition = () => {
+  const { channel } = useBroadcastChannel('users-mouse-positions')
+  const { profile } = useProfile()
+
+  return useMutation({
+    mutationFn: async (params: { position: { x: number; y: number } }) => {
+      channel?.send({
+        type: 'broadcast',
+        event: EVENT_USER_POSITION_UPDATED,
+        payload: { ...profile, position: params.position }
+      })
+    }
+  })
+}

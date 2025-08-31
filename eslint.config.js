@@ -66,7 +66,6 @@ export default [
       'comma-spacing': ['error', { before: false, after: true }],
       'comma-style': ['error', 'last'],
       'computed-property-spacing': ['error', 'never'],
-      'func-call-spacing': ['error', 'never'],
       indent: 'off', // Disabled due to infinite recursion issues with complex JSX
       'key-spacing': ['error', { beforeColon: false, afterColon: true }],
       'keyword-spacing': ['error', { before: true, after: true }],

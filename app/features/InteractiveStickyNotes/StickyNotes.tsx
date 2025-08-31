@@ -3,8 +3,6 @@ import { StickyNote } from '~/components/StickyNote'
 import type { Position } from '~/types/general'
 import type { StickyNote as StickyNoteType } from '~/types/stickynote'
 import { AnimatePresence } from 'motion/react'
-import { createContext, useContext } from 'react'
-import type { supabase } from '~/supabase'
 import type { User } from '~/contexts/ProfileContext'
 
 interface Props {
@@ -30,18 +28,4 @@ export function StickyNotes({ stickyNotes, onDeleteStickyNote, render }: Props) 
       ))}
     </AnimatePresence>
   )
-}
-
-const ChannelContext = createContext<ReturnType<typeof supabase.channel> | null>(null)
-
-export function StickyNotesWithChannel({ stickyNotes, onDeleteStickyNote, render, channel }: Props & { channel: ReturnType<typeof supabase.channel> | null }) {
-  return (
-    <ChannelContext.Provider value={channel}>
-      <StickyNotes stickyNotes={stickyNotes} onDeleteStickyNote={onDeleteStickyNote} render={render} />
-    </ChannelContext.Provider>
-  )
-}
-
-export function useChannel() {
-  return useContext(ChannelContext)
 }

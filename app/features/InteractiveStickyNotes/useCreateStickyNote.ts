@@ -2,7 +2,7 @@ import { supabase } from '~/supabase'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useProfile } from '~/contexts/ProfileContext'
 import type { StickyNote } from '~/types/stickynote'
-import { EVENT_STICKY_NOTES_CREATED } from './stickyNotesEvents'
+import { EVENT_STICKY_NOTES_CREATED } from '~/types/events'
 
 const createStickyNote = async (params: {
   id?: string
