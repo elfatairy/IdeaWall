@@ -198,8 +198,8 @@ export const GridItem = ({ children, x, y, disableScale = false }: { children: R
     }
   }, [])
 
-  const translateX = useTransform(width, (_width) => _width / 2 + x - itemSize.width / 2)
-  const translateY = useTransform(height, (_height) => _height / 2 + y - itemSize.height / 2)
+  const translateX = useTransform(width, (_width) => _width / 2 + x * zoom.get() - itemSize.width / 2)
+  const translateY = useTransform(height, (_height) => _height / 2 + y * zoom.get() - itemSize.height / 2)
 
   return (
     <motion.div

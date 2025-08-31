@@ -13,13 +13,6 @@ type Props = StickyNote & {
   user: User
   onDelete: () => void
 }
-// interface Props {
-//   color: string
-//   content: string
-//   owner: boolean
-//   onDelete: () => void
-//   id: string
-// }
 
 export function StickyNote({ color, content, user, onDelete, id }: Props) {
   const [inputContent, setInputContent] = useState(content)
