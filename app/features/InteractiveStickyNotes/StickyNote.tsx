@@ -68,6 +68,7 @@ export function StickyNote({ color, content, user, onDelete, id, sticky_notes_re
               className='peer p-4 w-full h-full text-sm leading-relaxed font-sans m-0 break-words font-semibold resize-none active:outline-none focus:outline-none'
               style={{ color: getTextColor(color) }}
               value={inputContent}
+              maxLength={80}
               onFocus={() => {
                 setIsEditing(true)
               }}

@@ -7,7 +7,7 @@ const updateStickyNoteContent = async (params: { id: string; content: string }) 
   const { id, content } = params
   const { data, error } = await supabase
     .from('sticky_notes')
-    .update({ content })
+    .update({ content: content.slice(0, 80) })
     .eq('id', id)
     .select('*, user:users(*), sticky_notes_reactions:sticky_notes_reactions(*)')
     .single()
