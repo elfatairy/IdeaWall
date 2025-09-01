@@ -207,7 +207,7 @@ export const GridItem = ({ children, x, y, disableScale = false }: { children: R
   return (
     <motion.div
       ref={itemRef}
-      className='absolute z-10 '
+      className='absolute z-10 hover:z-21 focus-within:z-20'
       style={{
         x: translateX,
         y: translateY,

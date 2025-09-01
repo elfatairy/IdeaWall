@@ -1,5 +1,5 @@
 import { Fragment } from 'react/jsx-runtime'
-import { StickyNote } from '~/components/StickyNote'
+import { StickyNote } from '~/features/InteractiveStickyNotes/StickyNote'
 import type { Position } from '~/types/general'
 import type { StickyNote as StickyNoteType } from '~/types/stickynote'
 import { AnimatePresence } from 'motion/react'

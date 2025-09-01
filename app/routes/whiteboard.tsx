@@ -66,11 +66,7 @@ export default function Whiteboard() {
       if (!profile?.id) {
         return
       }
-      const pos = {
-        x: position.x,
-        y: position.y
-      }
-      updateUserPosition({ position: pos })
+      updateUserPosition(position)
     }, THROTTLE_TIME)
   }, [updateUserPosition, profile?.id])
 

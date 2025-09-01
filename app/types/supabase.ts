@@ -52,6 +52,45 @@ export type Database = {
           },
         ]
       }
+      sticky_notes_reactions: {
+        Row: {
+          created_at: string
+          id: string
+          reaction: string | null
+          sticky_note_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reaction?: string | null
+          sticky_note_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reaction?: string | null
+          sticky_note_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sticky_notes_reactions_sticky_note_id_fkey"
+            columns: ["sticky_note_id"]
+            isOneToOne: false
+            referencedRelation: "sticky_notes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sticky_notes_reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users: {
         Row: {
           avatarConfig: Json

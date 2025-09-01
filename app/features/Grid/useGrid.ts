@@ -3,7 +3,6 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, use
 import { throttle } from '../../lib/utils'
 import { useMotionValue } from 'motion/react'
 import { THROTTLE_TIME } from '~/constants/grid'
-import { toast } from 'sonner'
 
 interface Props {
   width: number
@@ -140,7 +139,6 @@ export const useGrid = ({ width, height, minZoom, maxZoom, onFastClick, onHoldCl
             x: position.x / zoom.get() - width / 2,
             y: position.y / zoom.get() - height / 2
           }
-          toast.success(`holding at ${pos.x}, ${pos.y}`)
           onHoldClick({
             x: pos.x,
             y: pos.y
