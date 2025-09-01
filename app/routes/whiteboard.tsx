@@ -46,7 +46,7 @@ export default function Whiteboard() {
 
   const handleColorPaletteClick = (color: string) => {
     setColorPalettePosition(null)
-    createStickyNote({ id: crypto.randomUUID(), content: '', color, position: colorPalettePosition! }, {
+    createStickyNote({ id: crypto.randomUUID(), content: '', color, position: colorPalettePosition!, sticky_notes_reactions: [] }, {
       onError: () => {
         toast.error('Failed to create sticky note')
       }
@@ -108,7 +108,7 @@ export default function Whiteboard() {
             />
             <AnimatePresence>
               {colorPalettePosition && (
-                <GridItem x={colorPalettePosition.x} y={colorPalettePosition.y} disableScale>
+                <GridItem x={colorPalettePosition.x} y={colorPalettePosition.y} disableScale zIndex={40}>
                   <ColorPalette onClick={handleColorPaletteClick} />
                 </GridItem>
               )}

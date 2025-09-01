@@ -114,7 +114,12 @@ export function StickyNote({ color, content, user, onDelete, id, sticky_notes_re
         </div>
         {
           sticky_notes_reactions.length > 0 && (
-            <div className='w-fit pr-3 absolute -bottom-3 bg-popover rounded-lg p-1 shadow-md right-1 left-1 flex items-center gap-1'>
+            <motion.div
+              className='w-fit pr-3 absolute -bottom-3 bg-popover rounded-lg p-1 shadow-md right-1 left-1 flex items-center gap-1'
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+            >
               {Object.entries(sticky_notes_reactions.reduce((acc, reaction) => {
                 acc[reaction.reaction || ''] = (acc[reaction.reaction || ''] || 0) + 1
                 return acc
@@ -124,7 +129,7 @@ export function StickyNote({ color, content, user, onDelete, id, sticky_notes_re
                   <span className='text-xs font-semibold'>{count}</span>
                 </div>
               ))}
-            </div>
+            </motion.div>
           )
         }
         <PopoverContent

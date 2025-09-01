@@ -1,7 +1,7 @@
 import { supabase } from '~/supabase'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useProfile } from '~/contexts/ProfileContext'
-import type { StickyNote } from '~/types/stickynote'
+import type { StickyNote, StickyNoteReaction, StickyNoteWithReactions } from '~/types/stickynote'
 import { EVENT_STICKY_NOTES_CREATED } from '~/types/events'
 
 const createStickyNote = async (params: {
@@ -15,7 +15,7 @@ const createStickyNote = async (params: {
   const { data, error } = await supabase
     .from('sticky_notes')
     .insert({ id, content, color, position, user_id: userId })
-    .select('*, user:users(*)')
+    .select('*, user:users(*), sticky_notes_reactions:sticky_notes_reactions(*)')
     .single()
   if (!data) {
     throw new Error('Failed to create sticky note')
@@ -31,7 +31,13 @@ export const useCreateStickyNote = (channel: ReturnType<typeof supabase.channel>
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (params: { id?: string; content: string; color: string; position: { x: number; y: number } }) => {
+    mutationFn: (params: {
+      id?: string
+      content: string
+      color: string
+      position: { x: number; y: number }
+      sticky_notes_reactions: StickyNoteReaction[]
+    }) => {
       if (!profile?.id) {
         throw new Error('User profile not found. Please create a profile first.')
       }
@@ -51,7 +57,10 @@ export const useCreateStickyNote = (channel: ReturnType<typeof supabase.channel>
       }
 
       const previousStickyNotes = queryClient.getQueryData(['sticky_notes'])
-      queryClient.setQueryData(['sticky_notes'], (current: StickyNote[]) => [...(current ?? []), tempStickyNote])
+      queryClient.setQueryData(['sticky_notes'], (current: StickyNoteWithReactions[]) => [
+        ...(current ?? []),
+        tempStickyNote
+      ])
       return { params, previousStickyNotes }
     },
     onError: (_, __, context) => {

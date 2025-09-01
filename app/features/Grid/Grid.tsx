@@ -190,7 +190,7 @@ export const GridContent = ({ children }: { children: React.ReactNode }) => {
   )
 }
 
-export const GridItem = ({ children, x, y, disableScale = false }: { children: React.ReactNode, x: number, y: number, disableScale?: boolean }) => {
+export const GridItem = ({ children, x, y, disableScale = false, zIndex = undefined }: { children: React.ReactNode, x: number, y: number, disableScale?: boolean, zIndex?: number }) => {
   const { width, height, zoom } = useGridContentContext()
   const itemRef = useRef<HTMLDivElement>(null)
   const [itemSize, setItemSize] = useState<{ width: number, height: number }>({ width: 0, height: 0 })
@@ -207,11 +207,12 @@ export const GridItem = ({ children, x, y, disableScale = false }: { children: R
   return (
     <motion.div
       ref={itemRef}
-      className='absolute z-10 hover:z-21 focus-within:z-20'
+      className={'absolute z-10 hover:z-21 focus-within:z-20'}
       style={{
         x: translateX,
         y: translateY,
-        scale: disableScale ? 1 : zoom
+        scale: disableScale ? 1 : zoom,
+        zIndex: zIndex
       }}
     >
       {children}
