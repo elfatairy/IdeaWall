@@ -96,7 +96,7 @@ export function StickyNote({ color, content, user, onDelete, id, sticky_notes_re
             <Button
               variant='ghost'
               size='icon'
-              className='absolute top-1 right-1 w-7 h-7 rounded-full bg-black/10 hover:bg-red-500/90 hover:cursor-pointer hover:scale-110 backdrop-blur-sm border border-black/20 hover:border-red-400/50 transition-all duration-200 group opacity-0 hover:opacity-100 focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100'
+              className='absolute top-1 right-1 w-7 h-7 rounded-full bg-black/10 hidden group-hover:flex group-focus-within:flex hover:bg-red-500/90 hover:cursor-pointer hover:scale-110 backdrop-blur-sm border border-black/20 hover:border-red-400/50 transition-all duration-200 group opacity-0 hover:opacity-100 focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100'
               title="Delete note"
               onClick={onDelete}
             >

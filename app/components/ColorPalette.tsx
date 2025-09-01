@@ -43,7 +43,7 @@ interface Props {
 export function ColorPalette({ onClick }: Props) {
   return (
     <div className='relative bg-[#ff0]'>
-      <motion.div className='absolute -translate-x-1/2 -translate-y-1/2'
+      <motion.div className='absolute -translate-x-1/2 -translate-y-1/2 select-none'
         initial={{ opacity: 0, scale: 0 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.5 }}

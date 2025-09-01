@@ -12,6 +12,9 @@
 html,
 body {
   @apply bg-white;
+
+  overscroll-behavior-y: none;
+  touch-action: pan-y;
 }
 
 @theme inline {

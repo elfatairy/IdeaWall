@@ -31,7 +31,7 @@ export function EditProfileDialog({ open, onClose }: { open: boolean, onClose: (
     <Dialog open={open} onOpenChange={onClose}>
       <form>
         <DialogContent className='sm:max-w-[425px]'>
-          <NameAvatarDialog onSubmit={handleSubmit} isSubmitting={isEditingProfile} profile={profile} onClose={onClose} />
+          <NameAvatarDialog onSubmit={handleSubmit} isSubmitting={isEditingProfile} profile={profile} />
         </DialogContent>
       </form>
     </Dialog>
@@ -76,7 +76,7 @@ function NameAvatarDialog({ onSubmit, isSubmitting, profile }: { onSubmit: (name
         <DialogClose asChild>
           <Button variant='outline' className='cursor-pointer'>Cancel</Button>
         </DialogClose>
-        <Button type='submit' className='w-20 cursor-pointer' onClick={() => onSubmit(name, avatar)} disabled={isSubmitting}>{isSubmitting ? <Loader2 className='animate-spin' /> : 'Submit'}</Button>
+        <Button type='submit' className='sm:w-20 cursor-pointer' onClick={() => onSubmit(name, avatar)} disabled={isSubmitting}>{isSubmitting ? <Loader2 className='animate-spin' /> : 'Submit'}</Button>
       </DialogFooter>
     </>
   )

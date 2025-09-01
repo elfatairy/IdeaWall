@@ -9,7 +9,7 @@ const updateStickyNoteContent = async (params: { id: string; content: string }) 
     .from('sticky_notes')
     .update({ content })
     .eq('id', id)
-    .select('*, user:users(*)')
+    .select('*, user:users(*), sticky_notes_reactions:sticky_notes_reactions(*)')
     .single()
   if (error) {
     throw error

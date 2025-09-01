@@ -114,7 +114,7 @@ export default function Whiteboard() {
               )}
             </AnimatePresence>
             <UsersMousePositions render={(position, renderMouseIcon) => (
-              <GridItem x={position.x} y={position.y} disableScale>
+              <GridItem x={position.x} y={position.y} disableScale zIndex={50}>
                 {renderMouseIcon()}
               </GridItem>
             )}
@@ -123,9 +123,7 @@ export default function Whiteboard() {
         </Grid>
       </div>
 
-      {
-        <CreateProfileDialog open={!profile} />
-      }
+      <CreateProfileDialog open={!profile} />
     </>
   )
 }

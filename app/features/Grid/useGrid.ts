@@ -158,7 +158,7 @@ export const useGrid = ({ width, height, minZoom, maxZoom, onFastClick, onHoldCl
   )
 
   const handleMoving = useCallback(
-    (position: { x: number; y: number }) => {
+    (position: { x: number; y: number }, isTouch: boolean = false) => {
       if (isHolding) {
         if (holdingTimeoutRef.current) {
           clearTimeout(holdingTimeoutRef.current)
@@ -175,7 +175,7 @@ export const useGrid = ({ width, height, minZoom, maxZoom, onFastClick, onHoldCl
       if (!viewPort) {
         return
       }
-      if (onMouseMove) {
+      if (onMouseMove && !isTouch) {
         onMouseMove({
           x: (position.x - viewPort.width / 2) / zoom.get(),
           y: (position.y - viewPort.height / 2) / zoom.get()
@@ -214,6 +214,7 @@ export const useGrid = ({ width, height, minZoom, maxZoom, onFastClick, onHoldCl
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
+      e.preventDefault()
       handleMoving({
         x: e.clientX,
         y: e.clientY
@@ -224,12 +225,15 @@ export const useGrid = ({ width, height, minZoom, maxZoom, onFastClick, onHoldCl
 
   const handleTouchMove = useCallback(
     (e: React.TouchEvent) => {
-      handleMoving({
-        x: e.touches[0].clientX - dragStart.x,
-        y: e.touches[0].clientY - dragStart.y
-      })
+      handleMoving(
+        {
+          x: e.touches[0].clientX,
+          y: e.touches[0].clientY
+        },
+        true
+      )
     },
-    [handleMoving, dragStart.x, dragStart.y]
+    [handleMoving]
   )
 
   const handleMouseUp = useCallback(() => {
