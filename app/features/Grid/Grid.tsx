@@ -84,7 +84,15 @@ export default function Grid({
     <div className='relative h-full w-full'>
       {/* Zoom Controls */}
       <div className='absolute bottom-4 right-4 z-10 flex flex-row gap-2 items-center rounded-lg bg-white p-2 shadow-lg'>
-        <Slider min={minZoom} max={maxZoom} value={[zoomDisplayValue]} step={0.1} onValueChange={(values) => handleZoom(values[0])} className='w-40' aria-label='Zoom level slider' />
+        <Slider
+          min={minZoom}
+          max={maxZoom}
+          value={[zoomDisplayValue]}
+          step={0.1}
+          onValueChange={(values) => handleZoom(values[0])}
+          className='w-40'
+          aria-label='Zoom level slider'
+        />
         <motion.span className='text-center text-xs font-bold text-gray-600'>x{zoomDisplayValue.toFixed(2)}</motion.span>
       </div>
       {/* Grid Container */}
