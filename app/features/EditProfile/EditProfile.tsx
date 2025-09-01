@@ -8,6 +8,7 @@ import { useEditProfile } from './useEditProfile'
 import { toast } from 'sonner'
 import { useProfile, type User } from '~/contexts/ProfileContext'
 import { randomizeNameHelper } from '~/lib/utils'
+import { censor } from '~/lib/profanity'
 
 export function EditProfileDialog({ open, onClose }: { open: boolean, onClose: () => void }) {
   const { profile } = useProfile()
@@ -53,6 +54,8 @@ function NameAvatarDialog({ onSubmit, isSubmitting, profile }: { onSubmit: (name
     setName(randomizeNameHelper(avatar.sex))
   }
 
+  const disabled = isSubmitting || !name?.length
+
   return (
     <>
       <DialogHeader>
@@ -68,7 +71,7 @@ function NameAvatarDialog({ onSubmit, isSubmitting, profile }: { onSubmit: (name
       </div>
       <div className='flex justify-center'>
         <div className='relative flex gap-2 justify-center sm:max-w-[200px]'>
-          <Input id={id} value={name} onChange={(e) => setName(e.target.value)} className='text-center w-full' />
+          <Input id={id} value={name} onChange={(e) => setName(censor(e.target.value))} className='text-center w-full' />
           <Button variant='outline' onClick={randomizeName} size='icon' className='cursor-pointer absolute top-0 left-[calc(100%+10px)]'>
             <Dices />
           </Button>
@@ -78,7 +81,13 @@ function NameAvatarDialog({ onSubmit, isSubmitting, profile }: { onSubmit: (name
         <DialogClose asChild>
           <Button variant='outline' className='cursor-pointer'>Cancel</Button>
         </DialogClose>
-        <Button type='submit' className='sm:w-20 cursor-pointer' onClick={() => onSubmit(name, avatar)} disabled={isSubmitting}>{isSubmitting ? <Loader2 className='animate-spin' /> : 'Submit'}</Button>
+        <Button
+          type='submit'
+          className='sm:w-20 cursor-pointer'
+          onClick={() => onSubmit(name, avatar)}
+          disabled={disabled}
+        >{isSubmitting ? <Loader2 className='animate-spin' /> : 'Submit'}
+        </Button>
       </DialogFooter>
     </>
   )

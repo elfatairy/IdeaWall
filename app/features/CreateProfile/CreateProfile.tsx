@@ -8,6 +8,7 @@ import { faker } from '@faker-js/faker'
 import { useCreateProfile } from './useCreateProfile'
 import { toast } from 'sonner'
 import { randomizeNameHelper } from '~/lib/utils'
+import { censor } from '~/lib/profanity'
 
 export function CreateProfileDialog({ open }: { open: boolean }) {
   const { mutate: createProfile, isPending: isCreatingProfile } = useCreateProfile()
@@ -81,6 +82,8 @@ function NameAvatarDialog({ sex, onSubmit, isSubmitting, onBack }: { sex: 'man' 
     setName(randomizeNameHelper(sex))
   }
 
+  const disabled = isSubmitting || !name?.length
+
   return (
     <>
       <DialogHeader>
@@ -96,7 +99,7 @@ function NameAvatarDialog({ sex, onSubmit, isSubmitting, onBack }: { sex: 'man' 
       </div>
       <div className='flex justify-center'>
         <div className='relative flex gap-2 justify-center sm:max-w-[200px]'>
-          <Input id={id} value={name} onChange={(e) => setName(e.target.value)} className='text-center w-full' />
+          <Input id={id} value={name} onChange={(e) => setName(censor(e.target.value))} className='text-center w-full' />
           <Button variant='outline' onClick={randomizeName} size='icon' className='cursor-pointer sm:absolute top-0 left-[calc(100%+10px)]'>
             <Dices />
           </Button>
@@ -106,7 +109,13 @@ function NameAvatarDialog({ sex, onSubmit, isSubmitting, onBack }: { sex: 'man' 
         <DialogClose asChild>
           <Button variant='outline' onClick={onBack} className='cursor-pointer'>Back</Button>
         </DialogClose>
-        <Button type='submit' className='sm:w-20 cursor-pointer' onClick={() => onSubmit(name, avatar)} disabled={isSubmitting}>{isSubmitting ? <Loader2 className='animate-spin' /> : 'Create'}</Button>
+        <Button
+          type='submit'
+          className='sm:w-20 cursor-pointer'
+          disabled={disabled}
+          onClick={() => onSubmit(name, avatar)}
+        >{isSubmitting ? <Loader2 className='animate-spin' /> : 'Create'}
+        </Button>
       </DialogFooter>
     </>
   )

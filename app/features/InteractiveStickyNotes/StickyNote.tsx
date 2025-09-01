@@ -11,6 +11,7 @@ import Avatar from 'react-nice-avatar'
 import { THROTTLE_TIME } from '~/constants/grid'
 import { useReactToStickyNote } from '~/features/InteractiveStickyNotes/useReactToStickyNote'
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover'
+import { censor } from '~/lib/profanity'
 
 type Props = StickyNoteWithReactions & {
   user: User
@@ -63,7 +64,8 @@ export function StickyNote({ color, content, user, onDelete, id, sticky_notes_re
         {
           owner ? (
             <textarea
-              className='p-4 w-full h-full text-sm leading-relaxed font-sans m-0 break-words font-semibold resize-none active:outline-none focus:outline-none'
+              dir='auto'
+              className='peer p-4 w-full h-full text-sm leading-relaxed font-sans m-0 break-words font-semibold resize-none active:outline-none focus:outline-none'
               style={{ color: getTextColor(color) }}
               value={inputContent}
               onFocus={() => {
@@ -72,17 +74,17 @@ export function StickyNote({ color, content, user, onDelete, id, sticky_notes_re
               onBlur={() => {
                 setIsEditing(false)
               }}
-              onChange={(e) => handleContentChange(e.target.value)}
+              onChange={(e) => handleContentChange(censor(e.target.value))}
             />
           ) : (
             <PopoverTrigger asChild>
-              <p className='p-4 w-full h-full text-sm leading-relaxed font-sans m-0 break-words font-semibold' style={{ color: getTextColor(color) }}>
+              <p dir='auto' className='peer p-4 w-full h-full text-sm leading-relaxed font-sans m-0 break-words font-semibold' style={{ color: getTextColor(color) }}>
                 {content}
               </p>
             </PopoverTrigger>
           )
         }
-        {owner && <DeleteButton onDelete={onDelete} />}
+        {owner && <DeleteButton onDelete={onDelete} dir='auto' />}
         <AuthorDetails user={user} owner={owner} />
         <Reactions sticky_notes_reactions={sticky_notes_reactions} />
 
@@ -99,12 +101,12 @@ export function StickyNote({ color, content, user, onDelete, id, sticky_notes_re
   )
 }
 
-function DeleteButton({ onDelete }: { onDelete: () => void }) {
+function DeleteButton({ onDelete, dir }: { onDelete: () => void, dir: 'auto' | 'ltr' | 'rtl' }) {
   return (
     <Button
       variant='ghost'
       size='icon'
-      className='absolute top-1 right-1 w-7 h-7 rounded-full bg-black/10 hidden group-hover:flex group-focus-within:flex hover:bg-red-500/90 hover:cursor-pointer hover:scale-110 backdrop-blur-sm border border-black/20 hover:border-red-400/50 transition-all duration-200 group opacity-0 hover:opacity-100 focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100'
+      className='absolute right-1 bottom-1 w-7 h-7 rounded-full bg-black/10 hidden group-hover:flex group-focus-within:flex hover:bg-red-500/90 hover:cursor-pointer hover:scale-110 backdrop-blur-sm border border-black/20 hover:border-red-400/50 transition-all duration-200 group opacity-0 hover:opacity-100 focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100'
       title="Delete note"
       onClick={onDelete}
     >

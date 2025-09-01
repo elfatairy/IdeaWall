@@ -11,6 +11,7 @@ const updateStickyNoteContent = async (params: { id: string; content: string }) 
     .eq('id', id)
     .select('*, user:users(*), sticky_notes_reactions:sticky_notes_reactions(*)')
     .single()
+
   if (error) {
     throw error
   }
