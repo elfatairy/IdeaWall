@@ -23,6 +23,15 @@ export const stickynoteColors = [
   '#16b098'
 ]
 
+export const allowedReactions = {
+  Like: '👍',
+  Dislike: '👎',
+  Love: '❤️',
+  Laugh: '😂',
+  Sad: '😢',
+  Happy: '😊'
+}
+
 export const getTextColor = (color: string) => {
   const [r, g, b] = color.match(/\w\w/g)?.map((c) => parseInt(c, 16)) || [0, 0, 0]
   const brightness = (r * 299 + g * 587 + b * 114) / 1000

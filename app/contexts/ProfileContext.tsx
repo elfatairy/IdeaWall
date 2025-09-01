@@ -1,5 +1,5 @@
 import type React from 'react'
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useState } from 'react'
 import type { AvatarConfig } from 'react-nice-avatar'
 
 export type User = {

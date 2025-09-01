@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { User } from '~/contexts/ProfileContext'
 import { useBroadcastChannel } from '~/hooks/useBroadcastChannel'
-import { EVENT_USER_POSITION_UPDATED } from '~/types/events'
+import { EVENT_USER_POSITION_UPDATED } from '~/constants/events'
 
 export const useUsersMousePositions = () => {
   const [users, setUsers] = useState<User[]>([])

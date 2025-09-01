@@ -1,12 +1,12 @@
 import { Fragment } from 'react/jsx-runtime'
 import { StickyNote } from '~/features/InteractiveStickyNotes/StickyNote'
 import type { Position } from '~/types/general'
-import type { StickyNote as StickyNoteType } from '~/types/stickynote'
+import type { StickyNoteWithReactions } from '~/types/stickynote'
 import { AnimatePresence } from 'motion/react'
 import type { User } from '~/contexts/ProfileContext'
 
 interface Props {
-  stickyNotes: (StickyNoteType & { user: User })[]
+  stickyNotes: (StickyNoteWithReactions & { user: User })[]
   onDeleteStickyNote: (id: string) => void
   render: (position: { x: number, y: number }, StickyNote: () => React.ReactNode) => React.ReactNode
 }

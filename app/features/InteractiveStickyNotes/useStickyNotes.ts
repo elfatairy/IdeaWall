@@ -8,7 +8,7 @@ import {
   EVENT_STICKY_NOTES_CREATED,
   EVENT_STICKY_NOTES_DELETED,
   EVENT_STICKY_NOTES_REACTION_ADDED
-} from '~/types/events'
+} from '~/constants/events'
 import { useBroadcastChannel } from '~/hooks/useBroadcastChannel'
 import { useMemo } from 'react'
 import type { AvatarConfig } from 'react-nice-avatar'
@@ -79,13 +79,14 @@ export const useStickyNotes = () => {
     ],
     [queryClient]
   )
-  const { channel, isConnected } = useBroadcastChannel('sticky-notes', handlers)
+  useBroadcastChannel('sticky-notes', handlers)
+
   const { data: stickyNotes } = useQuery({
     queryFn: getStickyNotes,
     queryKey: ['sticky_notes']
   })
-  const { mutate: createStickyNote } = useCreateStickyNote(channel)
-  const { mutate: deleteStickyNote } = useDeleteStickyNote(channel)
+  const { mutate: createStickyNote } = useCreateStickyNote()
+  const { mutate: deleteStickyNote } = useDeleteStickyNote()
 
-  return { stickyNotes, isConnected, createStickyNote, deleteStickyNote }
+  return { stickyNotes, createStickyNote, deleteStickyNote }
 }

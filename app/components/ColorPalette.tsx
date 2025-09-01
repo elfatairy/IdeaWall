@@ -21,12 +21,8 @@ function ColorWheelSet({ colors, width, onClick }: { colors: string[], width: nu
         style={{
           backgroundColor: color
         }}
-        onMouseDown={(e) => {
-          e.stopPropagation()
-        }}
-        onTouchStart={(e) => {
-          e.stopPropagation()
-        }}
+        onMouseDown={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
         onClick={(e) => {
           e.stopPropagation()
           onClick(color)

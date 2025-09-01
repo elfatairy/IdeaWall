@@ -1,7 +1,7 @@
 import { Slider } from '~/components/ui/slider'
 import { useGrid } from './useGrid'
 import type React from 'react'
-import { createContext, Fragment, use, useCallback, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { createContext, Fragment, use, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { cn } from '~/lib/utils'
 import { motion, MotionValue, useTransform } from 'motion/react'
 
@@ -76,7 +76,7 @@ export default function Grid({
     }
   }))
 
-  const scaledWidth = useTransform(zoom, (zoom) => width * zoom)
+  const scaledWidth = useTransform(zoom, (_zoom) => width * _zoom)
 
   const gridLevels = useMemo(() => Math.ceil(Math.log10(width / gridCellSize)), [width, gridCellSize])
 
@@ -128,7 +128,7 @@ export default function Grid({
                 Array.from({ length: gridLevels }).map((_, index) => {
                   return (
                     <Fragment key={index}>
-                      <GridCell zoom={zoom} cellSize={gridCellSize} index={index} />
+                      <GridPattern zoom={zoom} cellSize={gridCellSize} index={index} />
                     </Fragment>
                   )
                 }
@@ -146,7 +146,9 @@ export default function Grid({
           {
             children && (
               <GridContext value={{ width: scaledWidth, height: scaledWidth, x, y, zoom }}>
-                {children}
+                <div className='absolute inset-0'>
+                  {children}
+                </div>
               </GridContext>
             )
           }
@@ -157,7 +159,7 @@ export default function Grid({
   )
 }
 
-const GridCell = ({ zoom, cellSize, index }: { zoom: MotionValue<number>, cellSize: number, index: number }) => {
+const GridPattern = ({ zoom, cellSize, index }: { zoom: MotionValue<number>, cellSize: number, index: number }) => {
   const scaledCellSize = useTransform(zoom, (_zoom) => cellSize * (10 ** index) * _zoom)
   const scaledStrokeWidth = useTransform(zoom, [0.1 ** index, 0.1 ** (index + 1)], [1, 0.1])
 
@@ -190,15 +192,15 @@ const useGridContentContext = () => {
   return context
 }
 
-export const GridContent = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <div className='absolute inset-0'>
-      {children}
-    </div>
-  )
+interface GridItemProps {
+  children: React.ReactNode
+  x: number
+  y: number
+  disableScale?: boolean
+  fixedZIndex?: number
 }
 
-export const GridItem = ({ children, x, y, disableScale = false, zIndex = undefined }: { children: React.ReactNode, x: number, y: number, disableScale?: boolean, zIndex?: number }) => {
+export const GridItem = ({ children, x, y, disableScale = false, fixedZIndex = undefined }: GridItemProps) => {
   const { width, height, zoom } = useGridContentContext()
   const itemRef = useRef<HTMLDivElement>(null)
   const [itemSize, setItemSize] = useState<{ width: number, height: number }>({ width: 0, height: 0 })
@@ -220,7 +222,7 @@ export const GridItem = ({ children, x, y, disableScale = false, zIndex = undefi
         x: translateX,
         y: translateY,
         scale: disableScale ? 1 : zoom,
-        zIndex: zIndex
+        zIndex: fixedZIndex
       }}
     >
       {children}

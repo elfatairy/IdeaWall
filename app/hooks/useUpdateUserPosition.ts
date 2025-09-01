@@ -1,4 +1,4 @@
-import { EVENT_USER_POSITION_UPDATED } from '~/types/events'
+import { EVENT_USER_POSITION_UPDATED } from '~/constants/events'
 import { useBroadcastChannel } from './useBroadcastChannel'
 import { useProfile } from '~/contexts/ProfileContext'
 

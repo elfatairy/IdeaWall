@@ -1,8 +1,9 @@
 import { supabase } from '~/supabase'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useProfile } from '~/contexts/ProfileContext'
-import type { StickyNote, StickyNoteReaction, StickyNoteWithReactions } from '~/types/stickynote'
-import { EVENT_STICKY_NOTES_CREATED } from '~/types/events'
+import type { StickyNoteReaction, StickyNoteWithReactions } from '~/types/stickynote'
+import { EVENT_STICKY_NOTES_CREATED } from '~/constants/events'
+import { useBroadcastChannel } from '~/hooks/useBroadcastChannel'
 
 const createStickyNote = async (params: {
   id?: string
@@ -26,7 +27,8 @@ const createStickyNote = async (params: {
   return data
 }
 
-export const useCreateStickyNote = (channel: ReturnType<typeof supabase.channel> | null) => {
+export const useCreateStickyNote = () => {
+  const { channel } = useBroadcastChannel('sticky-notes')
   const { profile } = useProfile()
   const queryClient = useQueryClient()
 

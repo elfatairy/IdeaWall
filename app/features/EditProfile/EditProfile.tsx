@@ -11,16 +11,18 @@ import { randomizeNameHelper } from '~/lib/utils'
 
 export function EditProfileDialog({ open, onClose }: { open: boolean, onClose: () => void }) {
   const { profile } = useProfile()
-  const { editProfile, isLoading: isEditingProfile } = useEditProfile()
+  const { mutate: editProfile, isPending: isEditingProfile } = useEditProfile()
 
   const handleSubmit = async (name: string, avatar: AvatarFullConfig) => {
-    const result = await editProfile(name, avatar)
-    if (result.success) {
-      toast.success('Profile updated successfully')
-      onClose()
-    } else {
-      toast.error('Failed to update profile')
-    }
+    editProfile({ name, avatar }, {
+      onSuccess: () => {
+        toast.success('Profile updated successfully')
+        onClose()
+      },
+      onError: () => {
+        toast.error('Failed to update profile')
+      }
+    })
   }
 
   if (!profile) {

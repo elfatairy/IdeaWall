@@ -3,10 +3,7 @@ import { useProfile } from '~/contexts/ProfileContext'
 import { supabase } from '~/supabase'
 
 const notifyOnline = async (userId: string) => {
-  const { data, error } = await supabase
-    .from('users')
-    .update({ last_activity_at: new Date().toISOString() })
-    .eq('id', userId)
+  const { error } = await supabase.from('users').update({ last_activity_at: new Date().toISOString() }).eq('id', userId)
   if (error) {
     throw error
   }

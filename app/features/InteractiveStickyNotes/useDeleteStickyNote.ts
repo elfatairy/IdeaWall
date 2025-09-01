@@ -1,10 +1,12 @@
 import { supabase } from '~/supabase'
 import { useProfile } from '~/contexts/ProfileContext'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { EVENT_STICKY_NOTES_DELETED } from '~/types/events'
+import { EVENT_STICKY_NOTES_DELETED } from '~/constants/events'
 import type { StickyNote } from '~/types/stickynote'
+import { useBroadcastChannel } from '~/hooks/useBroadcastChannel'
 
-export const useDeleteStickyNote = (channel: ReturnType<typeof supabase.channel> | null) => {
+export const useDeleteStickyNote = () => {
+  const { channel } = useBroadcastChannel('sticky-notes')
   const { profile } = useProfile()
   const queryClient = useQueryClient()
 

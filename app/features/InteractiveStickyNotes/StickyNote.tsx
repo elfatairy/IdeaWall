@@ -1,11 +1,11 @@
-import { getTextColor } from '~/lib/stickynotes'
+import { allowedReactions, getTextColor } from '~/lib/stickynotes'
 import { motion } from 'motion/react'
-import { PencilIcon, Trash } from 'lucide-react'
+import { Trash } from 'lucide-react'
 import { Button } from '../../components/ui/button'
 import { cn, throttle } from '~/lib/utils'
 import { useMemo, useState } from 'react'
 import { useUpdateStickyNoteContent } from '~/features/InteractiveStickyNotes/useUpdateStickyNoteContent'
-import type { StickyNote, StickyNoteWithReactions } from '~/types/stickynote'
+import type { StickyNoteReaction, StickyNoteWithReactions } from '~/types/stickynote'
 import { useProfile, type User } from '~/contexts/ProfileContext'
 import Avatar from 'react-nice-avatar'
 import { THROTTLE_TIME } from '~/constants/grid'
@@ -17,14 +17,6 @@ type Props = StickyNoteWithReactions & {
   onDelete: () => void
 }
 
-const allowedReactions = {
-  'Like': '👍',
-  'Dislike': '👎',
-  'Love': '❤️',
-  'Laugh': '😂',
-  'Sad': '😢',
-  'Happy': '😊'
-}
 export function StickyNote({ color, content, user, onDelete, id, sticky_notes_reactions }: Props) {
   const [inputContent, setInputContent] = useState(content)
   const { mutate: updateContentMutation } = useUpdateStickyNoteContent()
@@ -32,7 +24,6 @@ export function StickyNote({ color, content, user, onDelete, id, sticky_notes_re
   const [isHovering, setIsHovering] = useState(false)
   const { profile } = useProfile()
   const owner = user.id === profile?.id
-  const { mutate: reactToStickyNoteMutation } = useReactToStickyNote()
 
   const updateContent = useMemo(() =>
     throttle((newContent: string) => {
@@ -91,70 +82,93 @@ export function StickyNote({ color, content, user, onDelete, id, sticky_notes_re
             </PopoverTrigger>
           )
         }
-        {
-          owner && (
-            <Button
-              variant='ghost'
-              size='icon'
-              className='absolute top-1 right-1 w-7 h-7 rounded-full bg-black/10 hidden group-hover:flex group-focus-within:flex hover:bg-red-500/90 hover:cursor-pointer hover:scale-110 backdrop-blur-sm border border-black/20 hover:border-red-400/50 transition-all duration-200 group opacity-0 hover:opacity-100 focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100'
-              title="Delete note"
-              onClick={onDelete}
-            >
-              <Trash
-                size={12}
-                strokeWidth={2.5}
-                className='text-gray-700 group-hover:text-white group-focus-within:text-white transition-colors duration-200'
-              />
-            </Button>
-          )
-        }
-        <div className='absolute bottom-[calc(100%+4px)] right-1 left-1 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 group-focus-within:opacity-100'>
-          <Avatar className='w-6 h-6' {...user.avatarConfig} />
-          <span className='text-xs font-bold'>{owner ? 'You' : user.name}</span>
-        </div>
-        {
-          sticky_notes_reactions.length > 0 && (
-            <motion.div
-              className='w-fit pr-3 absolute -bottom-3 bg-popover rounded-lg p-1 shadow-md right-1 left-1 flex items-center gap-1'
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-            >
-              {Object.entries(sticky_notes_reactions.reduce((acc, reaction) => {
-                acc[reaction.reaction || ''] = (acc[reaction.reaction || ''] || 0) + 1
-                return acc
-              }, {} as Record<string, number>)).map(([reaction, count]) => (
-                <div key={reaction} className='text-sm flex items-center'>
-                  {allowedReactions[reaction as keyof typeof allowedReactions]}
-                  <span className='text-xs font-semibold'>{count}</span>
-                </div>
-              ))}
-            </motion.div>
-          )
-        }
+        {owner && <DeleteButton onDelete={onDelete} />}
+        <AuthorDetails user={user} owner={owner} />
+        <Reactions sticky_notes_reactions={sticky_notes_reactions} />
+
         <PopoverContent
           side='bottom'
           align='start'
           className='px-2 py-1 w-fit'
           sideOffset={4}
         >
-          <div className='flex items-center'>
-            {Object.entries(allowedReactions).map(([name, icon]) => (
-              <button
-                key={name}
-                className={cn('text-xl p-1 font-bold cursor-pointer hover:bg-slate-300/50 transition-all duration-200 rounded-full leading-6', currentReaction === name && 'bg-slate-300/50')}
-                onClick={() => {
-                  if (!profile?.id) {
-                    return
-                  }
-                  reactToStickyNoteMutation({ userId: profile.id, stickyNoteId: id, reaction: name })
-                }}
-              >{icon}
-              </button>
-            ))}
-          </div>
+          <ReactionButtons currentReaction={currentReaction} id={id} />
         </PopoverContent>
       </motion.div>
     </Popover>
+  )
+}
+
+function DeleteButton({ onDelete }: { onDelete: () => void }) {
+  return (
+    <Button
+      variant='ghost'
+      size='icon'
+      className='absolute top-1 right-1 w-7 h-7 rounded-full bg-black/10 hidden group-hover:flex group-focus-within:flex hover:bg-red-500/90 hover:cursor-pointer hover:scale-110 backdrop-blur-sm border border-black/20 hover:border-red-400/50 transition-all duration-200 group opacity-0 hover:opacity-100 focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100'
+      title="Delete note"
+      onClick={onDelete}
+    >
+      <Trash
+        size={12}
+        strokeWidth={2.5}
+        className='text-gray-700 group-hover:text-white group-focus-within:text-white transition-colors duration-200'
+      />
+    </Button>
+  )
+}
+
+function AuthorDetails({ user, owner }: { user: User, owner: boolean }) {
+  return (
+    <div className='absolute bottom-[calc(100%+4px)] right-1 left-1 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 group-focus-within:opacity-100'>
+      <Avatar className='w-6 h-6' {...user.avatarConfig} />
+      <span className='text-xs font-bold'>{owner ? 'You' : user.name}</span>
+    </div>
+  )
+}
+
+function Reactions({ sticky_notes_reactions }: { sticky_notes_reactions: StickyNoteReaction[] }) {
+  if (sticky_notes_reactions.length <= 0) {
+    return null
+  }
+  return (
+    <motion.div
+      className='w-fit pr-3 absolute -bottom-3 bg-popover rounded-lg p-1 shadow-md right-1 left-1 flex items-center gap-1'
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+    >
+      {Object.entries(sticky_notes_reactions.reduce((acc, reaction) => {
+        acc[reaction.reaction || ''] = (acc[reaction.reaction || ''] || 0) + 1
+        return acc
+      }, {} as Record<string, number>)).map(([reaction, count]) => (
+        <div key={reaction} className='text-sm flex items-center'>
+          {allowedReactions[reaction as keyof typeof allowedReactions]}
+          <span className='text-xs font-semibold'>{count}</span>
+        </div>
+      ))}
+    </motion.div>
+  )
+}
+
+function ReactionButtons({ currentReaction, id }: { currentReaction: string | null | undefined, id: string }) {
+  const { mutate: reactToStickyNoteMutation } = useReactToStickyNote()
+  const { profile } = useProfile()
+
+  return (
+    <div className='flex items-center'>
+      {Object.entries(allowedReactions).map(([name, icon]) => (
+        <button
+          key={name}
+          className={cn('text-xl p-1 font-bold cursor-pointer hover:bg-slate-300/50 transition-all duration-200 rounded-full leading-6', currentReaction === name && 'bg-slate-300/50')}
+          onClick={() => {
+            if (!profile?.id) {
+              return
+            }
+            reactToStickyNoteMutation({ userId: profile.id, stickyNoteId: id, reaction: name })
+          }}
+        >{icon}
+        </button>
+      ))}
+    </div>
   )
 }
