@@ -69,6 +69,7 @@ export function StickyNote({ color, content, user, onDelete, id, sticky_notes_re
               style={{ color: getTextColor(color) }}
               value={inputContent}
               maxLength={80}
+              placeholder='Write your stickynote here...'
               onFocus={() => {
                 setIsEditing(true)
               }}
@@ -85,7 +86,7 @@ export function StickyNote({ color, content, user, onDelete, id, sticky_notes_re
             </PopoverTrigger>
           )
         }
-        {owner && <DeleteButton onDelete={onDelete} dir='auto' />}
+        {owner && <DeleteButton onDelete={onDelete} />}
         <AuthorDetails user={user} owner={owner} />
         <Reactions sticky_notes_reactions={sticky_notes_reactions} />
 
@@ -102,13 +103,14 @@ export function StickyNote({ color, content, user, onDelete, id, sticky_notes_re
   )
 }
 
-function DeleteButton({ onDelete, dir }: { onDelete: () => void, dir: 'auto' | 'ltr' | 'rtl' }) {
+function DeleteButton({ onDelete }: { onDelete: () => void }) {
   return (
     <Button
       variant='ghost'
       size='icon'
       className='absolute right-1 bottom-1 w-7 h-7 rounded-full bg-black/10 hidden group-hover:flex group-focus-within:flex hover:bg-red-500/90 hover:cursor-pointer hover:scale-110 backdrop-blur-sm border border-black/20 hover:border-red-400/50 transition-all duration-200 group opacity-0 hover:opacity-100 focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100'
       title="Delete note"
+      aria-label="Delete note"
       onClick={onDelete}
     >
       <Trash
@@ -144,9 +146,11 @@ function Reactions({ sticky_notes_reactions }: { sticky_notes_reactions: StickyN
         acc[reaction.reaction || ''] = (acc[reaction.reaction || ''] || 0) + 1
         return acc
       }, {} as Record<string, number>)).map(([reaction, count]) => (
-        <div key={reaction} className='text-sm flex items-center'>
-          {allowedReactions[reaction as keyof typeof allowedReactions]}
-          <span className='text-xs font-semibold'>{count}</span>
+        <div key={reaction} className='text-sm flex items-center' aria-label={`${count} reaction${count > 1 ? 's' : ''} with ${reaction}`}>
+          <span aria-hidden={true}>
+            {allowedReactions[reaction as keyof typeof allowedReactions]}
+          </span>
+          <span className='text-xs font-semibold' aria-hidden={true}>{count}</span>
         </div>
       ))}
     </motion.div>
@@ -169,6 +173,7 @@ function ReactionButtons({ currentReaction, id }: { currentReaction: string | nu
             }
             reactToStickyNoteMutation({ userId: profile.id, stickyNoteId: id, reaction: name })
           }}
+          aria-label={`React to stickynote with ${name}`}
         >{icon}
         </button>
       ))}

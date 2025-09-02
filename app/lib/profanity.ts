@@ -1,7 +1,7 @@
 import { CensorType, Profanity } from '@2toad/profanity'
 
 export const profanity = new Profanity({
-  wholeWord: false,
+  wholeWord: true,
   languages: ['ar', 'en'],
   grawlixChar: '*',
   grawlix: '****'

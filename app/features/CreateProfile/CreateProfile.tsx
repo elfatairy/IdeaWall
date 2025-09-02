@@ -54,12 +54,12 @@ function GendersDialog({ onSelect }: { onSelect: (sex: 'man' | 'woman') => void 
         <DialogTitle>Profile Details</DialogTitle>
       </DialogHeader>
       <div className='flex gap-4'>
-        <button className='flex-1 aspect-square rounded-md border hover:bg-cyan-50/50 cursor-pointer group hover:text-cyan-500' onClick={() => onSelect('man')}>
+        <button className='flex-1 aspect-square rounded-md border hover:bg-cyan-50/50 cursor-pointer group hover:text-cyan-500' onClick={() => onSelect('man')} aria-label='Select man'>
           <div className='flex flex-col items-center justify-center h-full'>
             <Mars size={50} color='currentColor' />
           </div>
         </button>
-        <button className='flex-1 aspect-square rounded-md border hover:bg-pink-50/50 cursor-pointer group hover:text-pink-600' onClick={() => onSelect('woman')}>
+        <button className='flex-1 aspect-square rounded-md border hover:bg-pink-50/50 cursor-pointer group hover:text-pink-600' onClick={() => onSelect('woman')} aria-label='Select woman'>
           <div className='flex flex-col items-center justify-center h-full'>
             <Venus size={50} color='currentColor' />
           </div>
@@ -87,20 +87,20 @@ function NameAvatarDialog({ sex, onSubmit, isSubmitting, onBack }: { sex: 'man' 
   return (
     <>
       <DialogHeader>
-        <DialogTitle>Profile Details</DialogTitle>
+        <DialogTitle>Create Profile</DialogTitle>
       </DialogHeader>
       <div className='flex justify-center'>
         <div className='relative w-44 h-44'>
           <Avatar className='w-full h-full' {...avatar} />
-          <button className='absolute bottom-0 right-0 bg-white rounded-full p-2 cursor-pointer hover:bg-gray-100' onClick={randomizeAvatar}>
+          <button className='absolute bottom-0 right-0 bg-white rounded-full p-2 cursor-pointer hover:bg-gray-100' onClick={randomizeAvatar} aria-label='Randomize avatar'>
             <Dices size={36} />
           </button>
         </div>
       </div>
       <div className='flex justify-center'>
         <div className='relative flex gap-2 justify-center sm:max-w-[200px]'>
-          <Input id={id} value={name} onChange={(e) => setName(censor(e.target.value))} className='text-center w-full' />
-          <Button variant='outline' onClick={randomizeName} size='icon' className='cursor-pointer sm:absolute top-0 left-[calc(100%+10px)]'>
+          <Input name='name' placeholder='Enter your name' id={id} value={name} onChange={(e) => setName(censor(e.target.value))} className='text-center w-full' />
+          <Button variant='outline' onClick={randomizeName} size='icon' className='cursor-pointer sm:absolute top-0 left-[calc(100%+10px)]' aria-label='Randomize name'>
             <Dices />
           </Button>
         </div>
@@ -114,7 +114,7 @@ function NameAvatarDialog({ sex, onSubmit, isSubmitting, onBack }: { sex: 'man' 
           className='sm:w-20 cursor-pointer'
           disabled={disabled}
           onClick={() => onSubmit(name, avatar)}
-        >{isSubmitting ? <Loader2 className='animate-spin' /> : 'Create'}
+        >{isSubmitting ? <Loader2 aria-label='Creating profile' className='animate-spin' /> : 'Create'}
         </Button>
       </DialogFooter>
     </>

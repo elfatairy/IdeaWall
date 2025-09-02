@@ -39,6 +39,9 @@ export const useEditProfile = () => {
         avatarConfig: data.avatarConfig as AvatarFullConfig,
         position: data.position as Position
       })
+    },
+    onError: (error) => {
+      console.error(error)
     }
   })
 }

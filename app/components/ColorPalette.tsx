@@ -2,11 +2,11 @@ import { X } from 'lucide-react'
 import { stickynoteColors } from '~/lib/stickynotes'
 import { motion } from 'motion/react'
 
-function ColorWheelSet({ colors, width, onClick }: { colors: string[], width: number, onClick: (color: string) => void }) {
+function ColorWheelSet({ colors, width, onClick }: { colors: [string, string][], width: number, onClick: (color: string) => void }) {
   return (
     colors.map((color, index) => (
       <motion.button
-        key={color}
+        key={color[0]}
         className='w-13 h-13 absolute rounded-full cursor-pointer pointer-events-auto shadow-lg'
         initial={{ opacity: 0, scale: 0, translateX: -26, translateY: -26 }}
         animate={{
@@ -19,13 +19,14 @@ function ColorWheelSet({ colors, width, onClick }: { colors: string[], width: nu
         whileHover={{ scale: 1.2 }}
         whileTap={{ scale: 1 }}
         style={{
-          backgroundColor: color
+          backgroundColor: color[0]
         }}
+        aria-label={'Choose ' + color[1]}
         onMouseDown={(e) => e.stopPropagation()}
         onTouchStart={(e) => e.stopPropagation()}
         onClick={(e) => {
           e.stopPropagation()
-          onClick(color)
+          onClick(color[0])
         }}
       />
     ))
@@ -46,8 +47,8 @@ export function ColorPalette({ onClick }: Props) {
       >
         <X size={10} strokeWidth={2} />
       </motion.div>
-      <ColorWheelSet colors={stickynoteColors.slice(0, 8)} width={90} onClick={onClick} />
-      <ColorWheelSet colors={stickynoteColors.slice(8)} width={150} onClick={onClick} />
+      <ColorWheelSet colors={Object.entries(stickynoteColors).slice(0, 8)} width={90} onClick={onClick} />
+      <ColorWheelSet colors={Object.entries(stickynoteColors).slice(8)} width={150} onClick={onClick} />
     </div>
   )
 }

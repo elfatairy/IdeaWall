@@ -100,6 +100,7 @@ export default function Grid({
         ref={containerRef}
         className={cn('relative h-full w-full', !disabled && 'cursor-grab active:cursor-grabbing')}
         tabIndex={0}
+        aria-label='Grid'
       >
         <motion.div
           style={{

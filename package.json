@@ -9,6 +9,9 @@
     "typecheck": "react-router typegen && tsc",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:watch": "nodemon --ext js,jsx,ts,tsx --watch app/ --exec pnpm test",
     "lint": "eslint .",
     "supabase:generate": "supabase gen types typescript --project-id zdvuxklhrtasqgdkwere > app/types/supabase.ts"
   },
@@ -29,6 +32,7 @@
     "isbot": "^5.1.27",
     "lucide-react": "^0.541.0",
     "motion": "^12.23.12",
+    "nodemon": "^3.1.10",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-nice-avatar": "^1.5.0",
@@ -38,6 +42,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.34.0",
+    "@playwright/test": "^1.55.0",
     "@react-router/dev": "^7.7.1",
     "@tailwindcss/vite": "^4.1.4",
     "@types/node": "^20",
@@ -45,6 +50,7 @@
     "@types/react-dom": "^19.1.2",
     "@typescript-eslint/eslint-plugin": "^8.40.0",
     "@typescript-eslint/parser": "^8.40.0",
+    "dotenv": "^17.2.1",
     "eslint": "^9.34.0",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "6.0.0-rc.1",
