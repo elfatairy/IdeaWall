@@ -77,7 +77,7 @@ function NameAvatarDialog({ onSubmit, isSubmitting, profile }: { onSubmit: (name
           </Button>
         </div>
       </div>
-      <DialogFooter className='flex sm:justify-center'>
+      <DialogFooter className='flex sm:justify-between'>
         <DialogClose asChild>
           <Button variant='outline' className='cursor-pointer'>Cancel</Button>
         </DialogClose>
