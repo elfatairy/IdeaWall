@@ -21,7 +21,7 @@ export default defineConfig({
   reporter: [['html', { open: 'never' }], ['list']],
   workers: 1,
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL: process.env.CI ? 'https://ideawall.omarhassan.net' : 'http://localhost:5173',
     trace: 'on-first-retry'
   },
   projects: [
