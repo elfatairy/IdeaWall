@@ -20,10 +20,9 @@ export async function drag(page: Page, dx: number, dy: number): Promise<void> {
     const yStep = Math.min(dy - movedY, windowMiddleY - SAFE_Y_PADDING)
 
     await page.mouse.move(windowMiddleX + xStep, windowMiddleY + yStep)
-    await page.mouse.up({ button: 'left' })
+    await page.mouse.up({ button: 'left', clickCount: 2 })
 
     movedX += xStep
     movedY += yStep
   }
-  await page.mouse.up({ button: 'left' })
 }
