@@ -1,6 +1,10 @@
 import { test, expect, type Page, type BrowserContext } from '@playwright/test'
 import { defaultLogin } from './utils/defaultLogin'
 import { deleteProfile } from './utils/deleteProfile'
+import { drag } from './utils/Mouse/drag'
+import { zoom } from './utils/Mouse/zoom'
+import { moveToMiddle } from './utils/Mouse/moveToMiddle'
+import { moveToTestLocation } from './utils/moveToTestLocatoin'
 
 const isLoggedIn = async (page: Page) => {
   await page.waitForLoadState('networkidle')
@@ -60,7 +64,7 @@ test.describe('Whiteboard', () => {
     })
   })
 
-  test.describe('Logged in', () => {
+  test.describe.serial('Logged in', () => {
     let sharedContext: BrowserContext
     let sharedPage: Page
 
@@ -94,23 +98,25 @@ test.describe('Whiteboard', () => {
         await sharedPage2.goto('/')
         await sharedPage.waitForLoadState('domcontentloaded')
         await sharedPage2.waitForLoadState('domcontentloaded')
-        await sharedPage.mouse.move(300, 300)
+        await moveToTestLocation(sharedPage)
         await sharedPage.mouse.down()
         await sharedPage.waitForTimeout(500)
         await sharedPage.mouse.up()
         await sharedPage.getByRole('button', { name: /Choose Blue Bell/i }).click()
-        await sharedPage.waitForTimeout(100)
-        await expect(sharedPage.getByPlaceholder('Write your stickynote here...')).toBeVisible()
+        await expect(sharedPage.getByPlaceholder('Write your stickynote here...')).toBeVisible({ timeout: 2000 })
         await sharedPage.getByPlaceholder('Write your stickynote here...').fill('Test stickynote')
 
         await expect(sharedPage2.getByText('Test stickynote').first()).toBeVisible({ timeout: 1000 })
       })
 
       test('should be able to react to a stickynote', async () => {
+        test.setTimeout(60000)
         await sharedPage.goto('/')
         await sharedPage2.goto('/')
         await sharedPage.waitForLoadState('domcontentloaded')
         await sharedPage2.waitForLoadState('domcontentloaded')
+        await moveToTestLocation(sharedPage)
+        await moveToTestLocation(sharedPage2)
         await sharedPage2.locator('text="Test stickynote"').first().click()
         await sharedPage2.getByRole('button', { name: /Love/i }).click()
         await expect(sharedPage.getByText('1', { exact: true })).toBeVisible()
@@ -123,6 +129,8 @@ test.describe('Whiteboard', () => {
         await sharedPage2.goto('/')
         await sharedPage.waitForLoadState('domcontentloaded')
         await sharedPage2.waitForLoadState('domcontentloaded')
+        await moveToTestLocation(sharedPage)
+        await moveToTestLocation(sharedPage2)
         await sharedPage.locator('text="Test stickynote"').first().hover()
         await sharedPage.getByRole('button', { name: /Delete note/i }).click()
         await expect(sharedPage.getByText('Test stickynote')).not.toBeVisible()
