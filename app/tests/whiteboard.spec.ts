@@ -92,6 +92,15 @@ test.describe('Whiteboard', () => {
       await expect(sharedPage2.getByLabel('Your avatar')).toBeVisible()
     })
 
+    test('Should be able to zoom in and out', async () => {
+      await sharedPage.goto('/')
+      await sharedPage.waitForLoadState('domcontentloaded')
+      await zoom(sharedPage, 'left', 4)
+      await expect(sharedPage.getByText('0.60')).toBeVisible()
+      await zoom(sharedPage, 'right', 4)
+      await expect(sharedPage.getByText('1.00')).toBeVisible()
+    })
+
     test.describe.serial('Stickynotes', () => {
       test('should be able to create a new stickynote', async () => {
         await sharedPage.goto('/')
