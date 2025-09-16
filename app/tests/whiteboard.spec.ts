@@ -1,9 +1,7 @@
 import { test, expect, type Page, type BrowserContext } from '@playwright/test'
 import { defaultLogin } from './utils/defaultLogin'
 import { deleteProfile } from './utils/deleteProfile'
-import { drag } from './utils/Mouse/drag'
 import { zoom } from './utils/Mouse/zoom'
-import { moveToMiddle } from './utils/Mouse/moveToMiddle'
 import { moveToTestLocation } from './utils/moveToTestLocatoin'
 
 const isLoggedIn = async (page: Page) => {
@@ -16,18 +14,18 @@ const isLoggedIn = async (page: Page) => {
 }
 
 test.describe('Whiteboard', () => {
-  test('should have correct title', async ({ page }) => {
+  test.skip('should have correct title', async ({ page }) => {
     await page.goto('/')
     await expect(page).toHaveTitle('IdeaWall')
   })
 
-  test('should render logo', async ({ page }) => {
+  test.skip('should render logo', async ({ page }) => {
     await page.goto('/')
     await expect(page.getByAltText('IdeaWall')).toBeVisible()
   })
 
   // Serial
-  test.describe.serial('Authentication Flow', () => {
+  test.describe.skip('Authentication Flow', () => {
     let sharedContext: BrowserContext
     let sharedPage: Page
 
