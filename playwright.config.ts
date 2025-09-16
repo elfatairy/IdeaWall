@@ -17,7 +17,9 @@ export default defineConfig({
   testDir: './app/tests',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
+  // retries: process.env.CI ? 2 : 0,
+  retries: 0,
+  maxFailures: 1,
   reporter: [['html', { open: 'never' }], ['list']],
   workers: 1,
   use: {
