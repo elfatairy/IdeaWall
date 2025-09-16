@@ -141,10 +141,28 @@ test.describe('Whiteboard', () => {
         await moveToTestLocation(sharedPage)
         await moveToTestLocation(sharedPage2)
         await sharedPage.waitForTimeout(500)
-        await sharedPage.locator('text="Test stickynote"').first().hover()
-        await sharedPage.waitForTimeout(200)
-        await sharedPage.getByRole('button', { name: /Delete note/i }).click()
-        await sharedPage.waitForTimeout(200)
+
+        // More reliable hover approach
+        const stickyNote = sharedPage.locator('text="Test stickynote"').first()
+
+        // Ensure the sticky note is visible and stable
+        await expect(stickyNote).toBeVisible()
+        await sharedPage.waitForTimeout(100)
+
+        // Hover with force and wait for the delete button to appear
+        await stickyNote.hover({ force: true })
+
+        // Wait for the delete button to be visible with explicit timeout
+        const deleteButton = sharedPage.getByRole('button', { name: /Delete note/i })
+        await expect(deleteButton).toBeVisible({ timeout: 3000 })
+
+        // Additional wait to ensure CSS transitions complete
+        await sharedPage.waitForTimeout(300)
+
+        // Click with force to ensure it works even if hover state is unstable
+        await deleteButton.click({ force: true })
+
+        await sharedPage.waitForTimeout(2000)
         await expect(sharedPage.getByText('Test stickynote')).not.toBeVisible()
         await expect(sharedPage2.getByText('Test stickynote')).not.toBeVisible()
       })
