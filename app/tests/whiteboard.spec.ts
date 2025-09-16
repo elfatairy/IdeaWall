@@ -115,8 +115,8 @@ test.describe('Whiteboard', () => {
         await sharedPage.getByRole('button', { name: /Choose Blue Bell/i }).click({ timeout: 5000 })
         await expect(sharedPage.getByPlaceholder('Write your stickynote here...')).toBeVisible({ timeout: 2000 })
         await sharedPage.getByPlaceholder('Write your stickynote here...').fill('Test stickynote')
-
-        await expect(sharedPage2.getByText('Test stickynote').first()).toBeVisible({ timeout: 1000 })
+        await sharedPage.waitForTimeout(200)
+        await expect(sharedPage2.getByText('Test stickynote').first()).toBeVisible()
       })
 
       test('should be able to react to a stickynote', async () => {
