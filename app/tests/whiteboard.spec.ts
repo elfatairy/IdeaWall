@@ -153,11 +153,11 @@ test.describe('Whiteboard', () => {
         await stickyNote.hover({ force: true })
 
         // Wait for the delete button to be visible with explicit timeout
+        await sharedPage.waitForTimeout(300)
         const deleteButton = sharedPage.getByRole('button', { name: /Delete note/i })
         await expect(deleteButton).toBeVisible({ timeout: 3000 })
 
         // Additional wait to ensure CSS transitions complete
-        await sharedPage.waitForTimeout(300)
 
         // Click with force to ensure it works even if hover state is unstable
         await deleteButton.click({ force: true })
