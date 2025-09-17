@@ -65,7 +65,7 @@ export function StickyNote({ color, content, user, onDelete, id, sticky_notes_re
           owner ? (
             <textarea
               dir='auto'
-              className='peer p-4 w-full h-full text-sm leading-relaxed font-sans m-0 break-words font-semibold resize-none active:outline-none focus:outline-none'
+              className='p-4 w-full h-full text-sm leading-relaxed font-sans m-0 break-words font-semibold resize-none active:outline-none focus:outline-none'
               style={{ color: getTextColor(color) }}
               value={inputContent}
               maxLength={80}
@@ -80,14 +80,14 @@ export function StickyNote({ color, content, user, onDelete, id, sticky_notes_re
             />
           ) : (
             <PopoverTrigger asChild>
-              <p dir='auto' className='peer p-4 w-full h-full text-sm leading-relaxed font-sans m-0 break-words font-semibold' style={{ color: getTextColor(color) }}>
+              <p dir='auto' className='p-4 w-full h-full text-sm leading-relaxed font-sans m-0 break-words font-semibold' style={{ color: getTextColor(color) }}>
                 {content}
               </p>
             </PopoverTrigger>
           )
         }
-        {owner && <DeleteButton onDelete={onDelete} />}
-        <AuthorDetails user={user} owner={owner} />
+        {owner && <DeleteButton onDelete={onDelete} visible={isHovering || isEditing} />}
+        <AuthorDetails user={user} owner={owner} visible={isHovering || isEditing} />
         <Reactions sticky_notes_reactions={sticky_notes_reactions} />
 
         <PopoverContent
@@ -103,12 +103,17 @@ export function StickyNote({ color, content, user, onDelete, id, sticky_notes_re
   )
 }
 
-function DeleteButton({ onDelete }: { onDelete: () => void }) {
+function DeleteButton({ onDelete, visible }: { onDelete: () => void, visible: boolean }) {
   return (
     <Button
       variant='ghost'
       size='icon'
-      className='absolute right-1 bottom-1 w-7 h-7 rounded-full bg-black/10 flex group-focus-within:flex hover:bg-red-500/90 hover:cursor-pointer hover:scale-110 backdrop-blur-sm border border-black/20 hover:border-red-400/50 transition-all duration-200 group opacity-0 hover:opacity-100 focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100'
+      className={cn('absolute right-1 bottom-1 w-7 h-7 rounded-full flex',
+        'bg-black/10 cursor-pointer backdrop-blur-sm border border-black/20',
+        'hover:bg-red-500/90 hover:border-red-400/50',
+        'opacity-0 transition-all duration-200',
+        visible && 'opacity-100'
+      )}
       title="Delete note"
       aria-label="Delete note"
       onClick={onDelete}
@@ -116,15 +121,20 @@ function DeleteButton({ onDelete }: { onDelete: () => void }) {
       <Trash
         size={12}
         strokeWidth={2.5}
-        className='text-gray-700 group-hover:text-white group-focus-within:text-white transition-colors duration-200'
+        color='white'
       />
     </Button>
   )
 }
 
-function AuthorDetails({ user, owner }: { user: User, owner: boolean }) {
+function AuthorDetails({ user, owner, visible }: { user: User, owner: boolean, visible: boolean }) {
   return (
-    <div className='absolute bottom-[calc(100%+4px)] right-1 left-1 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 group-focus-within:opacity-100'>
+    <div
+      className={cn(
+        'absolute bottom-[calc(100%+4px)] right-1 left-1 flex items-center gap-2 opacity-0 transition-opacity duration-200',
+        visible && 'opacity-100'
+      )}
+    >
       <Avatar className='w-6 h-6' {...user.avatarConfig} />
       <span className='text-xs font-bold'>{owner ? 'You' : user.name}</span>
     </div>
