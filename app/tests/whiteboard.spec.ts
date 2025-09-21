@@ -25,7 +25,7 @@ test.describe('Whiteboard', () => {
   })
 
   // Serial
-  test.describe.skip('Authentication Flow', () => {
+  test.describe.serial('Authentication Flow', () => {
     let sharedContext: BrowserContext
     let sharedPage: Page
 
