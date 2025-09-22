@@ -128,9 +128,9 @@ test.describe('Whiteboard', () => {
         await sharedPage.waitForTimeout(500)
         await sharedPage2.locator('text="Test stickynote"').first().click()
         await sharedPage2.getByRole('button', { name: /Love/i }).click()
-        await expect(sharedPage.getByText('1', { exact: true })).toBeVisible()
+        await expect(sharedPage.getByText('1', { exact: true }).first()).toBeVisible()
         await expect(sharedPage.getByText('❤️')).toBeVisible()
-        await expect(sharedPage2.getByText('1', { exact: true })).toBeVisible()
+        await expect(sharedPage2.getByText('1', { exact: true }).first()).toBeVisible()
       })
 
       test('should be able to delete a stickynote', async () => {
