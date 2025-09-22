@@ -62,7 +62,7 @@ IdeaWall is an interactive online workspace for team brainstorming and collabora
 - Real-Time Reactions: React to teammates' ideas with emojis (👍❤️😂😢😊👎)
 - Live Collaboration: See other users' cursors and changes instantly
 - Flexible Navigation: Pan, zoom, and navigate the large workspace easily
-- User Profiles: Personalized avatars identify contributors
+- User Profiles: Personalized avatars
 - Perfect for brainstorming, project planning, retrospectives, and team workshops. No training needed - just join and start collaborating!
 
 ### Built With
